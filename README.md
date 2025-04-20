@@ -81,7 +81,7 @@ Reequired items are:
 
 * in section `[network]` `bindto`  and `port` are needed. 
 * in sections `[paths]` `plugins=` must be set to the path where the plugins are stored. 
-* pkuglin parameters are specified in `[plugin_parms]` with the base name of the plugin filename, e.g., plugin.py
+* pluglin parameters are specified in `[plugin_parms]` with the base name of the plugin filename, e.g., plugin.py
 
 Section and key names must start with alpha characters (A-Z, a-z) and must not contain the names of Python keywords, Python builtins, or names of instance variables or methods within the config class, or the word self. If an invalid keyword is used AttributeError is raised with descriptive errors. 
 
