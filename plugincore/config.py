@@ -2,8 +2,9 @@ import configparser
 import os
 import keyword
 import builtins
+from collections import UserDict
 
-class Config:
+class Config(UserDict):
     """ Parse and INI file for sections and keys, creating more Config objects for 
        each section. 
        usage: 
@@ -21,10 +22,13 @@ class Config:
         There are a few restrictions with the section and key names:
             keys must start with alpha characters (A-Z, a-z)
             keys must NOT be python keywords, builtins, or attributes or methods of the Config class
-            itself, or the word self as these will cause issues internally. 
+            itself, or the word self as these will cause issues internally.
+
+        The configuration data is accessible with either dot or index notation. This class 
+        is based on UserDict so it will pretty much act like a dict.
         """
     def __init__(self, **kwargs):
-        self._keys = []
+        super().__init__({})
         section_name = kwargs.get('section_name')
         _forbidden_keys = {
             'python keyword': keyword.kwlist,
@@ -56,8 +60,9 @@ class Config:
             for section in config.sections():
                 if keyok(section):
                     section_items = dict(config.items(section))
-                    setattr(self, section, Config(items=section_items, env_override=env_override,env_prefix=env_prefix, section_name=section))
-                    self._keys.append(section)
+                    conf = Config(items=section_items, env_override=env_override,env_prefix=env_prefix, section_name=section)
+                    setattr(self, section,conf)
+                    self.data[section] = conf
         elif items:
             for k, v in items.items():
                 if keyok(k):
@@ -71,18 +76,13 @@ class Config:
                         if env_var in os.environ:
                             v = os.environ[env_var]
                     setattr(self, k, v)
-                    self._keys.append(k)
+                    self.data[k] = v
         else:
             raise AttributeError('items or file must be specified')
 
-    def keys(self):
-        return self._keys
-
-    def items(self):
-        return {key: getattr(self, key) for key in self._keys}
-
-    def __getitem__(self, key):
-        return getattr(self, key)
+    @property
+    def _keys(self):
+        return self.data.keys()
 
     def merge(self, other: "Config", overwrite: bool = True):
         """
@@ -94,12 +94,15 @@ class Config:
         """
         for key in other._keys:
             if key not in self._keys:
-                setattr(self, key, getattr(other, key))
-                self._keys.append(key)
+                attr = getattr(other, key)
+                setattr(self, key, attr)
+                self.data[key] = attr
             elif isinstance(getattr(self, key), Config) and isinstance(getattr(other, key), Config):
                 getattr(self, key).merge(getattr(other, key), overwrite=overwrite)
             elif overwrite:
-                setattr(self, key, getattr(other, key))
+                attr = getattr(other, key)
+                setattr(self, key, attr)
+                self.data[key] = attr
 
     def write(self, filename: str):
         """
@@ -120,3 +123,12 @@ class Config:
         with open(filename, 'w') as f:
             config.write(f)
 
+    def _walk_config(self):
+        for k,v in self.items():
+            print(f"{k}",end="")
+            if type(v) is str:
+                print(f"={v}")
+            elif isinstance(v,Config):
+                print("-->",end="")
+                v._walk_config()
+        print("")
