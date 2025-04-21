@@ -91,6 +91,8 @@ def register_plugin_route(plugin_id, instance, config):
     @routes.route('*', f'/{plugin_id}')
     async def handle(request, inst=instance, pid=plugin_id, cfg=config):
         print(request.remote, '- request -', pid)
+        plugin = manager.get_plugin(pid)
+
         data = {}
         if request.method == 'POST' and request.can_read_body:
             try:
@@ -99,8 +101,7 @@ def register_plugin_route(plugin_id, instance, config):
                 pass
         data.update(request.query)
 
-        # Optional: plugin can enforce auth by checking apikey in data
-        result = await maybe_async(inst.handle_request(**data))
+        result = await maybe_async(plugin.handle_request(**data))
 
         if isinstance(result, web.StreamResponse):
             return result

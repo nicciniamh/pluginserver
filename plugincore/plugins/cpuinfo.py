@@ -4,6 +4,7 @@ import psutil
 
 class CpuInfo(BasePlugin):
     def request_handler(self, **data):
+        print(f"CpuInfo REQUEST, data={data}")
         cpudata = {
             'cpu_count': psutil.cpu_count(),
             'loadavg': psutil.getloadavg(),

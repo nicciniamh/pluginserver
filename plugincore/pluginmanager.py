@@ -42,14 +42,15 @@ class PluginManager:
             self.load_plugin(path)
 
     def load_plugin(self, path: str):
-        plugin_module = os.path.basename(path)
+        plugin_module = os.path.splitext(os.path.basename(path))[0]  # strip .py
         mod = self._load_module(path)
         self.modules[plugin_module] = mod
+
         for cls in self._get_plugin_classes(mod):
             adict = {}
             try:
                 adict = parse_parameter_string(self.config.plugin_parms[plugin_module])
-            except AttributeError:
+            except (AttributeError, KeyError):
                 pass
             kwargs = self.kwargs.copy()
             kwargs.update(adict)
