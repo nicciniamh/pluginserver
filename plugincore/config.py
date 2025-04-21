@@ -122,13 +122,3 @@ class Config(UserDict):
 
         with open(filename, 'w') as f:
             config.write(f)
-
-    def _walk_config(self):
-        for k,v in self.items():
-            print(f"{k}",end="")
-            if type(v) is str:
-                print(f"={v}")
-            elif isinstance(v,Config):
-                print("-->",end="")
-                v._walk_config()
-        print("")
