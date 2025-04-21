@@ -6,49 +6,6 @@ python aiohttp offsers a great way to do this, but, how to do so dynamically? Pl
 
 Simplistic RESTapi servers use routes to determine the request handler when a request is made. A requests is made up of `proto://address:port/route?parameters`. Proto would typically be http or https. Address is the ip address or hostname of the server and port is the numeric port the server listens on. 
 
-An [Example Request](#Example-Request) is show below. 
-
-## Plugins
-This module creates am aiohttp server and loads its routes from a directory of plugins. Plugins are python scripts that have some common properties:
-
-* Derived from BasePlugin
-* Has a method of handle_request which can return an aiohtto.Web.Response or a dict that is returned as a JSON resposne. 
-
-Plugins may receive additional parameters from the [INI file](#Ini-File).
-
-BasePlugin is defined as:
-
-```python
-class BasePlugin:
-    def __init__(self, **kwargs):
-        ourclass = self.__class__.__name__
-        self._plugin_id = kwargs.get('route_path',ourclass.lower())
-        self.args = dict(kwargs)
-
-    def _get_plugin_id(self):
-        return self._plugin_id
-
-```
-
-In `__init__` if the kawarg, route_path, is set (usually from the .ini config file), that value is used for the route path of the server, otherwise, the class name, lowered, is used to create the routepath. 
-
-Example plugin: 
-
-```python
-class CpuInfo(BasePlugin):
-
-    async def handle_request(self, **data):
-        return {
-            'cpu_count': psutil.cpu_count(),
-            'loadavg': psutil.getloadavg(),
-            'percent': psutil.cpu_percent(),
-            'times': psutil.cpu_times(),
-            'stats': psutil.cpu_stats()
-        }
-```
-
-This creates a route for the rest server of /cpuinfo.
-
 ## INI File
 
 Entries in the INI files are made with `[section]` and key,value pairs. Some sections are required.
