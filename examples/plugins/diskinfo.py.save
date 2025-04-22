@@ -65,7 +65,7 @@ class DiskInfo(BasePlugin):
                             usage = shutil.disk_usage(mpoint)
                             entries.append({
                                 'dev': dev,
-                                'friendly_dev': _devname(dev),
+                                'friendlt_dev': _devname(dev),
                                 'fstype': fstype,
                                 'mpoint':mpoint,
                                 'options': options,

@@ -16,4 +16,4 @@ class IFInfo(BasePlugin):
 				if i.family == socket.AddressFamily.AF_INET:
 					mask = sum(bin(int(octet)).count('1') for octet in i.netmask.split('.'))
 					if_info.append({'iface': iface, 'address': f"{i.address}/{mask}"})
-		return if_info
+		return web.json_response(if_info,status=200)

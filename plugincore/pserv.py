@@ -9,12 +9,16 @@ import signal
 from aiohttp import web
 from plugincore import pluginmanager
 from plugincore import config
+import aiohttp_cors
 
 routes = web.RouteTableDef()
 manager = None  # PluginManager reference
-
+globalCfg = None
+cors_enabled = False
 def main():
     global manager
+    global globalCfg
+    global cors_enabled
     # Reload handler
     we_are = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
@@ -25,7 +29,7 @@ def main():
     parser.add_argument('-f','--file',default='pserv.ini',type=str, metavar='ini-file',help='Use an alternate config file')
     parser.add_argument('-e','--env-override',default=False, action='store_true', help='Let environment variables override config values')
     parser.add_argument('-p','--prefix',default='PSERV',metavar='string',type=str,help='Use <prefix>_ as prefix for environment variables')
-    parser.add_argument('--ssl-key',default=None,metavar='key-file',help='use key-file for SSL key')    
+    parser.add_argument('--ssl-key',default=None,metavar='key-file',help='use key-file for SSL key')
     parser.add_argument('--ssl-cert',default=None,metavar='cert-file',help='use key-file for SSL certificate')
     args = parser.parse_args()
 
@@ -54,7 +58,7 @@ def main():
         ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         print("======== SSL Configuration ========")
         print(f"SSL key {ssl_key}")
-        print(f"SSL certificate: {ssl_cert}") 
+        print(f"SSL certificate: {ssl_cert}")
         print(f"SSL context {ssl_ctx}")
         print("Loading SSL cert chain")
         try:
@@ -71,7 +75,6 @@ def main():
     manager = pluginmanager.PluginManager(globalCfg.paths.plugins, config=globalCfg)
     manager.load_plugins()
 
-
     # Register plugin routes
     for plugin_id, instance in manager.plugins.items():
         register_plugin_route(plugin_id, instance, globalCfg)
@@ -82,10 +85,38 @@ def main():
     register_control_routes(globalCfg)
 
     app = web.Application()
+    
+    # CORS setup
+    if 'cors' in globalCfg:
+            if  'enabled' in globalCfg.cors and globalCfg.cors.enabled.lower() in ['true','enabled','on','1']:
+                if 'origin_url' in globalCfg.cors:
+                    print(f"CORS Setup - ORIGIN URL is {globalCfg.cors.origin_url}")
+                    cors_enbled = True
+                    setup_cors(app)
+
     app.add_routes(routes)
-    web.run_app(app, host=globalCfg.network.bindto, port=globalCfg.network.port, ssl_context=ssl_ctx)
+    web.run_app(app, host=globalCfg.network.bindto, port=int(globalCfg.network.port), ssl_context=ssl_ctx)
 
+# --- cors headers ---
+def cors_headers(response):
+    global cors_enbled
+    def add_header(response):
+        if cors_enabled:
+            response.headers['Access-Control-Allow-Origin'] = config.cors.origin_url
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
+    if isinstance(response,web.StreamResponse):
+        response = add_header(response)
+    elif isinstance(response, dict):
+        response = add_header(web.json_response(response))
+        return response
+    elif isinstance(response, str):
+        response = add_header(web.Response(text=response, content_type='text/html'))
+    else:
+        response = add_header(web.json_response({'result': str(response)}))
+    return response
 
 # --- Auth Helper ---
 def check_auth(data, config):
@@ -112,16 +143,9 @@ def register_plugin_route(plugin_id, instance, config):
                 pass
         data.update(request.query)
 
-        result = await maybe_async(plugin.handle_request(**data))
-
-        if isinstance(result, web.StreamResponse):
-            return result
-        elif isinstance(result, dict):
-            return web.json_response(result)
-        elif isinstance(result, str):
-            return web.Response(text=result, content_type='text/html')
-        else:
-            return web.json_response({'result': str(result)})
+        response = await maybe_async(plugin.handle_request(**data))
+        return cors_headers(response)
+        
 
 # --- Control Routes ---
 def register_control_routes(config):
@@ -151,6 +175,20 @@ def register_control_routes(config):
             return web.json_response({'error': 'unauthorized'}, status=403)
         manager.load_plugins()
         return web.json_response({'status': 'All plugins reloaded', 'loaded_plugins': list(manager.plugins.keys())})
+
+# --- CORS Setup ---
+def setup_cors(app):
+    cors = aiohttp_cors.setup(app)
+    global globalCfg
+    # Allow specific origin for all routes
+    for route in list(app.router.routes()):
+        cors.add(route, {
+            "origins": [
+                globalCfg.cors.origin_url
+            ],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "allow_methods": ["GET", "POST", "OPTIONS"]
+        })
 
 # --- Coroutine Await Helper ---
 async def maybe_async(value):
