@@ -1,5 +1,5 @@
-import configparser
 import os
+import configparser
 import keyword
 import builtins
 from collections import UserDict

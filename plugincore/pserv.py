@@ -4,6 +4,8 @@ import inspect
 import asyncio
 import ssl
 import os
+import sys
+import signal
 from aiohttp import web
 from plugincore import pluginmanager
 from plugincore import config
@@ -13,6 +15,9 @@ manager = None  # PluginManager reference
 
 def main():
     global manager
+    # Reload handler
+    we_are = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+
     parser = argparse.ArgumentParser(
         description="Plugin Server - create a RESTapi using simple plugins",
         epilog="Nicole Stevens/2025"
@@ -23,6 +28,9 @@ def main():
     parser.add_argument('--ssl-key',default=None,metavar='key-file',help='use key-file for SSL key')    
     parser.add_argument('--ssl-cert',default=None,metavar='cert-file',help='use key-file for SSL certificate')
     args = parser.parse_args()
+
+    signal.signal(signal.SIGHUP, reload)
+    print(f"{we_are}({os.getpid()}): Installed SIGHUP handler for reload.")
 
     globalCfg = config.Config(file=args.file, env_override=args.env_override, env_prefix=args.prefix)
 
@@ -77,6 +85,8 @@ def main():
     app.add_routes(routes)
     web.run_app(app, host=globalCfg.network.bindto, port=globalCfg.network.port, ssl_context=ssl_ctx)
 
+
+
 # --- Auth Helper ---
 def check_auth(data, config):
     try:
@@ -88,11 +98,12 @@ def check_auth(data, config):
 
 # --- Plugin Request Handler ---
 def register_plugin_route(plugin_id, instance, config):
+    print(f"Registering route: /{plugin_id} to {instance}")
+
     @routes.route('*', f'/{plugin_id}')
     async def handle(request, inst=instance, pid=plugin_id, cfg=config):
         print(request.remote, '- request -', pid)
         plugin = manager.get_plugin(pid)
-
         data = {}
         if request.method == 'POST' and request.can_read_body:
             try:
@@ -144,6 +155,11 @@ def register_control_routes(config):
 # --- Coroutine Await Helper ---
 async def maybe_async(value):
     return await value if inspect.isawaitable(value) else value
+
+# ---- Reload handler ----
+def reload(signum, frame):
+    print("Received SIGHUP, restarting...")
+    os.execl(sys.executable, sys.executable, *sys.argv)
 
 if __name__ == "__main__":
     main()
