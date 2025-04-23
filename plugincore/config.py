@@ -4,6 +4,13 @@ import keyword
 import builtins
 from collections import UserDict
 
+def value_bool(value: any) -> bool:
+    if type(value) is str:
+        return value in ['true','enabled','on','1','enable']
+    if value:
+        return True
+    return False
+
 class Config(UserDict):
     """ Parse and INI file for sections and keys, creating more Config objects for 
        each section. 
