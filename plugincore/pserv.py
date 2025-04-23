@@ -8,7 +8,7 @@ import sys
 import signal
 from aiohttp import web
 from plugincore import pluginmanager
-from plugincore import config
+from plugincore import configfile
 import aiohttp_cors
 
 routes = web.RouteTableDef()
@@ -21,7 +21,7 @@ class CORS:
       self.cors_enabled = False
       if 'cors' in self.config:
          if 'enabled' in self.config.cors:
-            self.cors_enabled = config.value_bool(self.config.cors.enabled)
+            self.cors_enabled = self.config.value_bool(self.config.cors.enabled)
          if self.cors_enabled:
             if 'origin_url' in self.config.cors:
                 self.origin_url = self.config.cors.origin_url
@@ -84,7 +84,7 @@ def main():
     signal.signal(signal.SIGHUP, reload)
     print(f"{we_are}({os.getpid()}): Installed SIGHUP handler for reload.")
 
-    globalCfg = config.Config(file=args.file, env_override=args.env_override, env_prefix=args.prefix)
+    globalCfg = configfile.Config(file=args.file, env_override=args.env_override, env_prefix=args.prefix)
 
     ssl_ctx = None
     ssl_cert, ssl_key = (None, None)
