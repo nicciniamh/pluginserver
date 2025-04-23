@@ -16,8 +16,8 @@ manager = None  # PluginManager reference
 globalCfg = None
 
 class CORS:
-   def setup(self,app,config):
-      self.config = config
+   def setup(self,app,globalCfg):
+      self.config = globalCfg
       self.cors_enabled = False
       if 'cors' in self.config:
          if 'enabled' in self.config.cors:
@@ -28,7 +28,7 @@ class CORS:
             else:
                 self.cors_enabled = False
             if self.cors_enabled:
-                print(f"CORS Setup - ORIGIN URL is {config.cors.origin_url}")
+                print(f"CORS Setup - ORIGIN URL is {self.config.cors.origin_url}")
                 cors = aiohttp_cors.setup(app)
                 for route in list(app.router.routes()):
                     cors.add(route, {
