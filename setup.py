@@ -1,9 +1,11 @@
 from setuptools import setup
 
+## setuptool config for pluginserver
+
 setup(
-    name='pluginserver',  # still the project name; no need to rename this unless you want
+    name='pluginserver',
     version='0.3',
-    packages=['plugincore'],  # matches the new directory name
+    packages=['plugincore'],
     include_package_data=True,
     install_requires=[
         'aiohttp',
@@ -11,7 +13,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'pserve = plugincore.pserv:main',  # updated module path
+            'pserve = plugincore.pserv:main',
         ],
     },
 )
