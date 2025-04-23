@@ -21,7 +21,7 @@ class CORS:
       self.cors_enabled = False
       if 'cors' in self.config:
          if 'enabled' in self.config.cors:
-            self.cors_enabled = self.config.value_bool(self.config.cors.enabled)
+            self.cors_enabled = config.value_bool(self.config.cors.enabled)
          if self.cors_enabled:
             if 'origin_url' in self.config.cors:
                 self.origin_url = self.config.cors.origin_url
