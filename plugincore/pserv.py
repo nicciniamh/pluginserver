@@ -14,53 +14,63 @@ import aiohttp_cors
 routes = web.RouteTableDef()
 manager = None  # PluginManager reference
 globalCfg = None
-
 class CORS:
-   def setup(self,app,globalCfg):
-      self.config = globalCfg
-      self.cors_enabled = False
-      if 'cors' in self.config:
-         if 'enabled' in self.config.cors:
-            self.cors_enabled = self.config.value_bool(self.config.cors.enabled)
-         if self.cors_enabled:
-            if 'origin_url' in self.config.cors:
-                self.origin_url = self.config.cors.origin_url
-            else:
-                self.cors_enabled = False
+    def setup(self, app, globalCfg):
+        self.origins = []
+        self.config = globalCfg
+        self.cors_enabled = False
+
+        if 'cors' in self.config:
+            if 'enabled' in self.config.cors:
+                self.cors_enabled = configfile.value_bool(self.config.cors.enabled)
             if self.cors_enabled:
-                print(f"CORS Setup - ORIGIN URL is {self.config.cors.origin_url}")
+                if 'origin_url' in self.config.cors:
+                    if '|' in self.config.cors.origin_url:
+                        self.origins = self.config.cors.origin_url.split('|')
+                    else:
+                        self.origins = [self.config.cors.origin_url]
+                else:
+                    self.cors_enabled = False
+
+            if self.cors_enabled:
+                print(f"CORS Setup - ORIGIN URLs: {self.origins}")
                 cors = aiohttp_cors.setup(app)
                 for route in list(app.router.routes()):
                     cors.add(route, {
-                        "origins": [
-                            self.origin_url
-                        ],
-                        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-                        "allow_methods": ["GET", "POST", "OPTIONS"]
+                        'origins': self.origins,
+                        'allow_credentials': True,
+                        'expose_headers': "*",
+                        'allow_headers': "*",
+                        'allow_methods': ["GET", "POST", "OPTIONS"]
                     })
-         return self
-   def _add_header(self,response):
-      try:
-         if self.cors_enabled:
-            response.headers['Access-Control-Allow-Origin'] = self.config.cors.origin_url
-            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-      except AttributeError as e:
-         print(f"Exception(AttributeError) this probably means our corsobj is screwed up: {e}")
-      return response
+        return self
 
-   def apply_headers(self,response):
-      if isinstance(response,web.StreamResponse):
-         response = self._add_header(response)
-      elif isinstance(response, dict):
-         response = self._add_header(web.json_response(response))
-         return response
-      elif isinstance(response, str):
-         response = self._add_header(web.Response(text=response, content_type='text/html'))
-      else:
-         response = self._add_header(web.json_response({'result': str(response)}))
-      return response
- 
+    def _add_header(self, response, request):
+        request_origin = request.headers.get('Origin')
+        try:
+            if self.cors_enabled:
+                if request_origin and request_origin in self.origins:
+                    response.headers['Access-Control-Allow-Origin'] = request_origin
+                    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+                    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+                    response.headers['Vary'] = 'Origin'
+                else:
+                    # Fallback if origin is not recognized
+                    response.headers['Access-Control-Allow-Origin'] = '*'
+        except AttributeError as e:
+            print(f"Exception(AttributeError): CORS header error: {e}")
+        return response
+
+    def apply_headers(self, response, request):
+        if isinstance(response, web.StreamResponse):
+            response = self._add_header(response, request)
+        elif isinstance(response, dict):
+            response = self._add_header(web.json_response(response), request)
+        elif isinstance(response, str):
+            response = self._add_header(web.Response(text=response, content_type='text/html'), request)
+        else:
+            response = self._add_header(web.json_response({'result': str(response)}), request)
+        return response
 
 corsobj = CORS()
 def main():
@@ -166,7 +176,7 @@ def register_plugin_route(plugin_id, instance, config):
         data.update(request.query)
 
         response = await maybe_async(plugin.handle_request(**data))
-        return corsobj.apply_headers(response)
+        return corsobj.apply_headers(response,request)
         
 
 # --- Control Routes ---
@@ -176,27 +186,27 @@ def register_control_routes(config):
         data = dict(request.query)
         if not check_auth(data, config):
             return web.json_response({'error': 'unauthorized'}, status=403)
-        return corsobj.apply_headers(web.json_response({'loaded_plugins': list(manager.plugins.keys())}))
+        return corsobj.apply_headers(web.json_response({'loaded_plugins': list(manager.plugins.keys())}),request)
 
     @routes.get('/reload/{plugin_id}')
     async def reload_plugin(request):
         data = dict(request.query)
         if not check_auth(data, config):
-            return corsobj.apply_headers(web.json_response({'error': 'unauthorized'}, status=403))
+            return corsobj.apply_headers(web.json_response({'error': 'unauthorized'}, status=403),request)
 
         pid = request.match_info['plugin_id']
         if pid in manager.plugins:
             success = manager.reload_plugin(pid)
-            return corsobj.apply_headers(web.json_response({'reloaded': pid, 'success': success}))
-        return corsobj.apply_headers(web.json_response({'error': f'Plugin "{pid}" not found'}, status=404))
+            return corsobj.apply_headers(web.json_response({'reloaded': pid, 'success': success}),request)
+        return corsobj.apply_headers(web.json_response({'error': f'Plugin "{pid}" not found'}, status=404),request)
 
     @routes.get('/reload/all')
     async def reload_all(request):
         data = dict(request.query)
         if not check_auth(data, config):
-            return corsobj.apply_headers(web.json_response({'error': 'unauthorized'}, status=403))
+            return corsobj.apply_headers(web.json_response({'error': 'unauthorized'}, status=403),request)
         manager.load_plugins()
-        return corsobj.apply_headers(web.json_response({'status': 'All plugins reloaded', 'loaded_plugins': list(manager.plugins.keys())}))
+        return corsobj.apply_headers(web.json_response({'status': 'All plugins reloaded', 'loaded_plugins': list(manager.plugins.keys())}),request)
 
 # --- Coroutine Await Helper ---
 async def maybe_async(value):
