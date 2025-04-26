@@ -70,6 +70,7 @@ class CORS:
             response = self._add_header(web.Response(text=response, content_type='text/html'), request)
         else:
             response = self._add_header(web.json_response({'result': str(response)}), request)
+        response.headers['X-Content-Type-Options'] = 'nosniff' 
         return response
 
 corsobj = CORS()
@@ -174,7 +175,7 @@ def register_plugin_route(plugin_id, instance, config):
             except Exception:
                 pass
         data.update(request.query)
-
+        data['request_headers'] = dict(request.headers)
         response = await maybe_async(plugin.handle_request(**data))
         return corsobj.apply_headers(response,request)
         

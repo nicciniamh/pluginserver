@@ -12,9 +12,10 @@ class RamInfo(BasePlugin):
 		ram = psutil.virtual_memory()
 		return {
 			'total': ram.total,
-			'free': ram.free,
+			'free':  ram.free,
 			'used': ram.used,
 			'free': ram.free,
+			'cached': ram.cached,
 			'percent': ram.percent,
 			'active': ram.active,
 			'buffers': ram.buffers,
