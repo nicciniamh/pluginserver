@@ -1,15 +1,92 @@
 #!/usr/bin/env python3
-from plugincore.baseplugin import BasePlugin
-from aiohttp import web
-import psutil
+"""
+plugincore.BasePlugin based plugin for pluginserver
+
+This plugin produces a dictionary and then json object of various
+system details, grouped into cpu, ram, disk, network, upgrades, uptime and info
+
+"""
 import os
-import sys
 import shutil
-from plugincore.baseplugin import BasePlugin
-from aiohttp import web
 import psutil
 import socket
-import subprocess
+from plugincore.baseplugin import BasePlugin
+from aiohttp import web
+
+class FSTab:
+    """
+    A class that holds a list of dicts with filesystem information:
+            dev:			Device name 
+            friendly_dev:	Friendly name
+            mount:			Path on which device is mounted
+            fstype:			filesystem type
+            options:		filesystem options
+            total:			total space in bytes
+            free:			free space in bytes
+            used:			used space in bytes
+            percent:		percent used
+    This information is gleaned from /etc/fstab and from shutil
+    """
+    def __init__(self):
+        keys = ['dev','mount','fstype','options']
+        self._entries = []
+        with open('/etc/fstab') as f:
+            for line in f.read().strip().split('\n'):
+                line = line.split('#')[0].strip()
+                if line:
+                    line = line.split()
+                    if len(line) != 6:
+                        continue
+                    dd = {}
+                    dd['friendly_dev'] = self._devname(line[0])
+                    for i in range(0,len(keys)-1):
+                        dd[keys[i]] = line[i]
+                    
+                    #
+                    # as a matter of system information network and virtual filesystems are 
+                    # filtered out. The idea is to get a list of actual disk devices 
+                    #
+                    if dd['fstype'] in ['ext2','ext3','ext4','fat32','vfat','exfat','fat12','fat16'
+                                  'zfs','xfs','ufs','ntfs','apfs','hfs+','hfsplus','hfs','hpfs']:
+                        self._get_usage(dd)
+                        self._entries.append(dd)
+    
+    def _get_usage(self,dd:dict) ->None:
+        """
+        update the dict in dd with the disk usage information
+        """
+        usage = shutil.disk_usage(dd['mount']) 
+        dd.update({
+            'total': usage.total,
+            'free': usage.free,
+            'used': usage.used,
+            'percent': 100-int(((usage.free/usage.total)*100))
+        })
+
+    def _devname(self,d:str) ->str:
+        ''' get a readable name for a fstab device '''
+        if '=' in d:
+            return d.split('=')[1]
+        if 'by-id' in d or 'by-uuid' in d:
+            return os.path.basename(os.path.realpath(d))
+        return os.path.basename(d)
+
+    def get_fsentry(self,search:str,data:dict) -> dict:
+        """
+        search through entries where search == data return dict 
+        """
+        for entry in self._entries:
+            for k,v in entry.items():
+                if k == search and v == data:
+                    return entry
+        return None
+    
+    @property
+    def entries(self) -> list:
+        """
+        return list of file system entry dicts
+        """
+        return self._entries
 
 class SystemInfo(BasePlugin):
     def __init__(self,**kwargs):
@@ -20,7 +97,7 @@ class SystemInfo(BasePlugin):
         if at:
             self.allowed_fstypes = [i.strip() for i in at.split(',')]
 
-    def if_info(self,**data):
+    def if_info(self,**data:dict) ->dict:
         if_info = []
         for iface, ifdata in psutil.net_if_addrs().items():
             for i in ifdata:
@@ -29,7 +106,7 @@ class SystemInfo(BasePlugin):
                     if_info.append({'iface': iface, 'address': f"{i.address}/{mask}"})
         return if_info
 
-    def cpu_info(self, **data):
+    def cpu_info(self, **data:dict) ->dict:
         cpu_model = "Unknown"
         with open('/proc/cpuinfo') as f:
             lines = f.read().strip().split('\n')
@@ -47,7 +124,7 @@ class SystemInfo(BasePlugin):
         }
         return cpudata
 
-    def uptime_info(self, **data):
+    def uptime_info(self, **data:dict)  ->dict:
         '''
         Get uptime as seconds, pretty and boot time 
         '''
@@ -76,59 +153,10 @@ class SystemInfo(BasePlugin):
 
         return  {'pretty': pretty, 'seconds': seconds}
 
-    def disk_info(self,**data):
-        at = data.get('types')
-        if at:
-            at = [i.strip() for i in at.split(',')]
-        else:
-            at = self.allowed_fstypes
-        return self.get_disk_entries(at)
+    def disk_info(self,**data:dict) ->dict:
+        return FSTab().entries
 
-    def get_disk_entries(self, allowed_types):
-        """
-        This method does the heavy lifting examining file systems and builds a list of dicts 
-        containing information about each filesystem. 
-        """
-
-        entries = []
-
-        def _devname(d):
-            ''' get a readable name for a fstab device '''
-            if '=' in d:
-                return d.split('=')[1]
-            if 'by-id' in d or 'by-uuid' in d:
-                return os.path.basename(os.path.realpath(d))
-            return os.path.basename(d)
-
-        with open('/etc/fstab') as f:
-            for l in f.read().strip().split('\n'):
-                l = l.strip()
-                if not len(l) or l.startswith(' ') or l.startswith('#'):
-                    continue
-                try:
-                    dev,mpoint,fstype,options,freq,passno = l.split()
-                except:
-                    print(f'Cannot parse line "{l}',file=sys.stderr)
-                    continue
-                try:
-                    if fstype in allowed_types:
-                        if mpoint and os.path.exists(mpoint):
-                            usage = shutil.disk_usage(mpoint)
-                            entries.append({
-                                'dev': dev,
-                                'friendly_dev': _devname(dev),
-                                'fstype': fstype,
-                                'mpoint':mpoint,
-                                'options': options,
-                                'total': usage.total,
-                                'free': usage.free,
-                                'used': usage.used,
-                            })
-                except ValueError:
-                    pass
-        return entries
-
-    def upgrade_info(self,**data):
+    def upgrade_info(self,**data:dict) ->dict:
         count = -1;
         try:
             if os.path.exists('/tmp/upgade_packages'):
@@ -138,7 +166,7 @@ class SystemInfo(BasePlugin):
             pass
         return {"Upgradable packages": count}
     
-    def os_info(self,**data):
+    def os_info(self,**data:dict) ->dict:
         uname = os.uname()
         return {
             'machine': uname.machine,
@@ -149,7 +177,7 @@ class SystemInfo(BasePlugin):
         }
    
 
-    def ram_info(self,**data):    
+    def ram_info(self,**data:dict) ->dict:    
         ram = psutil.virtual_memory()
         return {
 			'total': ram.total,
@@ -166,7 +194,7 @@ class SystemInfo(BasePlugin):
 			'slab': ram.slab
 		}
     
-    def request_handler(self,**data):
+    def request_handler(self,**data:dict) ->dict:
         data = {
             'net': self.if_info(**data),
             'cpu': self.cpu_info(**data),
@@ -177,7 +205,7 @@ class SystemInfo(BasePlugin):
             'info': self.os_info(**data)
         }
 
-        response = web.json_response(data);
+        response = web.json_response(data); # return a response object instead of a dict
         return response;
 
 if __name__ == "__main__":
