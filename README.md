@@ -141,3 +141,32 @@ Returns
 {"times": [5291.78, 0.92, 3509.42, 1030631.58, 134.41, 0.0, 463.98, 0.0, 0.0, 0.0]}
 ```
 
+### Plugin Control
+There are a few routes that control the plugin server. 
+
+* `/plugins` - List the server's active plugins
+* `/reload/<plugin name>` - Reload the named plugin
+* `/reload/all` - Reload all plugins
+
+
+So, for example, if I modify the plugin systeminfo.py, I can push this file to each server's plugin directory. For each host it's a simple matter of accessing that route: 
+
+```bash
+curl -k https://server.tld:9192/reload/systeminfo?apikey=deadbeef
+```
+
+## SSL
+
+This server is configured to use SSL or regular HTTPS. To use SSL, you can enable it with these entries in the INI file: 
+
+```ini
+[SSL]
+enabled=true
+certfile=/path/to/certs/server.pem
+keyfile=/path/to/certs/server-key.pem
+```
+
+To enable SSL, all three of these items must be present, however enabled must be set to true. If enable is set but cerfile and keyfile are not, it wont be enabled. 
+
+It's important to note that, when SSL is enabled, self-signed certificates are problematic between browsers and client libraries make sure all match-up. To create a proper certificate [Let's Encrypt](https://letsencrypt.org/) is a good way to go. 
+
