@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=nicci
-ExecStart=%h/bin/defvenv.sh pserver -f %h/pserv.ini
+ExecStart=%h/etc/rsysinfo/venv.sh %h/pyenv pserver -f %h/etc/rsysinfo/rsysinfo.ini
 
 [Install]
 WantedBy=multi-user.target
