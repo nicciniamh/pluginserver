@@ -1,0 +1,13 @@
+[Unit]
+Description=System Info Server
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=nicci
+ExecStart=%h/bin/defvenv.sh pserver -f %h/pserv.ini
+
+[Install]
+WantedBy=multi-user.target
