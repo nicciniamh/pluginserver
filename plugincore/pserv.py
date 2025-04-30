@@ -25,10 +25,7 @@ class CORS:
                 self.cors_enabled = configfile.value_bool(self.config.cors.enabled)
             if self.cors_enabled:
                 if 'origin_url' in self.config.cors:
-                    if '|' in self.config.cors.origin_url:
-                        self.origins = self.config.cors.origin_url.split('|')
-                    else:
-                        self.origins = [self.config.cors.origin_url]
+                    self.origins = self.config.cors.origin_url # the origin_url should now be a list
                 else:
                     self.cors_enabled = False
 
