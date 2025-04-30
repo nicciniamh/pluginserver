@@ -195,7 +195,8 @@ class SystemInfo(BasePlugin):
 		}
     
     def request_handler(self,**data:dict) ->dict:
-        data = {
+        subpath = data.get('subpath');
+        response_data = {
             'net': self.if_info(**data),
             'cpu': self.cpu_info(**data),
             'uptime': self.uptime_info(**data),
@@ -204,8 +205,13 @@ class SystemInfo(BasePlugin):
             'ram': self.ram_info(**data),
             'info': self.os_info(**data)
         }
-
-        response = web.json_response(data); # return a response object instead of a dict
+        if subpath:
+            if subpath in response_data:
+                response_data = response_data[subpath]
+            else:
+                response_data = {'Error': f"{subpath} is not a member of response_data"}
+                web.json_response(response_data,status=404); 
+        response = web.json_response(response_data); # return a response object instead of a dict
         return response;
 
 if __name__ == "__main__":

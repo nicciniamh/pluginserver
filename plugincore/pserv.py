@@ -77,42 +77,32 @@ corsobj = CORS()
 def main():
     global manager
     global globalCfg
-#	global corsobj
-    # Reload handler
+
     we_are = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
     parser = argparse.ArgumentParser(
         description="Plugin Server - create a RESTapi using simple plugins",
         epilog="Nicole Stevens/2025"
         )
-    parser.add_argument('-f','--file',default='pserv.ini',type=str, metavar='ini-file',help='Use an alternate config file')
-    parser.add_argument('-e','--env-override',default=False, action='store_true', help='Let environment variables override config values')
-    parser.add_argument('-p','--prefix',default='PSERV',metavar='string',type=str,help='Use <prefix>_ as prefix for environment variables')
-    parser.add_argument('--ssl-key',default=None,metavar='key-file',help='use key-file for SSL key')
-    parser.add_argument('--ssl-cert',default=None,metavar='cert-file',help='use key-file for SSL certificate')
+    parser.add_argument('-i','--ini-file',default=f"{we_are}.ini",type=str, metavar='ini-file',help='Use an alternate config file')
     args = parser.parse_args()
 
     signal.signal(signal.SIGHUP, reload)
     print(f"{we_are}({os.getpid()}): Installed SIGHUP handler for reload.")
 
-    globalCfg = configfile.Config(file=args.file, env_override=args.env_override, env_prefix=args.prefix)
+    globalCfg = configfile.Config(file=args.ini_file)
 
     ssl_ctx = None
     ssl_cert, ssl_key = (None, None)
     enabled = False
 
-    if args.ssl_key and args.ssl_cert:
-        ssl_key = args.ssl_key
-        ssl_cert = args.ssl_cert
-        enabled = True
-    else:
-        # SSL setup if enabled
-        try:
-            ssl_key = globalCfg.SSL.keyfile
-            ssl_cert = globalCfg.SSL.certfile
-            enabled = globalCfg.SSL.enabled.lower() == 'true'
-        except AttributeError:
-            pass
+    # SSL setup if enabled
+    try:
+        ssl_key = globalCfg.SSL.keyfile
+        ssl_cert = globalCfg.SSL.certfile
+        enabled = globalCfg.SSL.enabled
+    except AttributeError:
+        pass
     if ssl_key and ssl_cert and enabled:
         ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         print("======== SSL Configuration ========")
@@ -149,7 +139,7 @@ def main():
     corsobj.setup(app,globalCfg)
 
     app.add_routes(routes)
-    web.run_app(app, host=globalCfg.network.bindto, port=int(globalCfg.network.port), ssl_context=ssl_ctx)
+    web.run_app(app, host=globalCfg.network.bindto, port=globalCfg.network.port, ssl_context=ssl_ctx)
 
 # --- Auth Helper ---
 def check_auth(data, config):
@@ -165,6 +155,7 @@ def register_plugin_route(plugin_id, instance, config):
     print(f"Registering route: /{plugin_id} to {instance}")
 
     @routes.route('*', f'/{plugin_id}')
+    @routes.route('*', f'/{plugin_id}/{{tail:.*}}')
     async def handle(request, inst=instance, pid=plugin_id, cfg=config):
         print(request.remote, '- request -', pid)
         plugin = manager.get_plugin(pid)
@@ -176,9 +167,13 @@ def register_plugin_route(plugin_id, instance, config):
                 pass
         data.update(request.query)
         data['request_headers'] = dict(request.headers)
+        # You can also capture `tail` if you want to use the subpath
+        try:
+            data['subpath'] = request.match_info['tail']
+        except KeyError:
+            data['subpath'] = None
         response = await maybe_async(plugin.handle_request(**data))
-        return corsobj.apply_headers(response,request)
-        
+        return corsobj.apply_headers(response, request)        
 
 # --- Control Routes ---
 def register_control_routes(config):
