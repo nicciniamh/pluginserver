@@ -11,7 +11,7 @@ class BasePlugin:
         self._apikey = None
         self.config = kwargs.get('config')
         self._plugin_id = kwargs.get('route_path',self.__class__.__name__.lower())
-        self.auth_type = kwargs.get('auth')
+        self.auth_type = kwargs.get('auth_type')
         if self._auth_type:
             if self._auth_type.lower() == 'global':
                 if 'auth' in self.config and 'apikey' in self.config.auth:

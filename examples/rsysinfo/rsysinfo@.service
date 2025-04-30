@@ -1,3 +1,5 @@
+#
+# 
 [Unit]
 Description=System Info Server
 After=network.target
@@ -6,8 +8,10 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-User=nicci
-ExecStart=%h/etc/rsysinfo/venv.sh %h/etc/rsysinfo/venv.sh pserver -f %h/etc/rsysinfo/rsysinfo.ini
+User=%i
+ExecStart=/home/%i/pyenv/bin/python3 \
+	  /home/%i/pyenv/bin/pserve \
+	   -i /home/%i/etc/rsysinfo/rsysinfo.ini
 
 [Install]
 WantedBy=multi-user.target
