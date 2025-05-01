@@ -46,14 +46,12 @@ class CORS:
 
     def _add_header(self, response, request):
         """Add the CORS headers to the response."""
-        print(f"add_header:Headers: {request.headers}")
         request_origin = request.headers.get('Origin')
         if request_origin == 'null':
             request_origin = None
         if not request_origin:
             return response
         host_name = urlparse(request_origin).hostname
-        print(f"Checking {request_origin}{type(request_origin)}:{host_name}")
 
         request_ok = True
         if self.cors_enabled and request_origin:
