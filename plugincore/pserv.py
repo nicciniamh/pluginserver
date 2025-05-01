@@ -10,65 +10,12 @@ from aiohttp import web
 from plugincore import pluginmanager
 from plugincore import configfile
 import aiohttp_cors
-
+from plugincore.cors import CORS
 routes = web.RouteTableDef()
 manager = None  # PluginManager reference
 globalCfg = None
-class CORS:
-    def setup(self, app, globalCfg):
-        self.origins = []
-        self.config = globalCfg
-        self.cors_enabled = False
-
-        if 'cors' in self.config:
-            if 'enabled' in self.config.cors:
-                self.cors_enabled = configfile.value_bool(self.config.cors.enabled)
-            if self.cors_enabled:
-                if 'origin_url' in self.config.cors:
-                    self.origins = self.config.cors.origin_url # the origin_url should now be a list
-                else:
-                    self.cors_enabled = False
-
-            if self.cors_enabled:
-                print(f"CORS Setup - ORIGIN URLs: {self.origins}")
-                cors = aiohttp_cors.setup(app)
-                for route in list(app.router.routes()):
-                    cors.add(route, {
-                        'origins': self.origins,
-                        'allow_credentials': True,
-                        'expose_headers': "*",
-                        'allow_headers': "*",
-                        'allow_methods': ["GET", "POST", "OPTIONS"]
-                    })
-        return self
-
-    def _add_header(self, response, request):
-        request_origin = request.headers.get('Origin')
-        try:
-            if self.cors_enabled:
-                if request_origin and request_origin in self.origins:
-                    response.headers['Access-Control-Allow-Origin'] = request_origin
-                    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-                    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-                    response.headers['Vary'] = 'Origin'
-                else:
-                    # Fallback if origin is not recognized
-                    response.headers['Access-Control-Allow-Origin'] = '*'
-        except AttributeError as e:
-            print(f"Exception(AttributeError): CORS header error: {e}")
-        return response
-
-    def apply_headers(self, response, request):
-        if isinstance(response, web.StreamResponse):
-            response = self._add_header(response, request)
-        elif isinstance(response, dict):
-            response = self._add_header(web.json_response(response), request)
-        elif isinstance(response, str):
-            response = self._add_header(web.Response(text=response, content_type='text/html'), request)
-        else:
-            response = self._add_header(web.json_response({'result': str(response)}), request)
-        response.headers['X-Content-Type-Options'] = 'nosniff' 
-        return response
+import aiohttp_cors
+from aiohttp import web
 
 corsobj = CORS()
 def main():
@@ -117,6 +64,9 @@ def main():
             ssl_ctx = None
         print("End of SSL configuration.")
 
+    if not 'paths' in globalCfg:
+        print(f"no paths in {globalCfg}")
+        sys.exit(1)
     print("======== Loading plugin modules ========")
     manager = pluginmanager.PluginManager(globalCfg.paths.plugins, config=globalCfg)
     manager.load_plugins()
@@ -170,7 +120,8 @@ def register_plugin_route(plugin_id, instance, config):
         except KeyError:
             data['subpath'] = None
         response = await maybe_async(plugin.handle_request(**data))
-        return corsobj.apply_headers(response, request)        
+        response = corsobj.apply_headers(response, request)
+        return response
 
 # --- Control Routes ---
 def register_control_routes(config):

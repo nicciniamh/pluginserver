@@ -33,7 +33,8 @@ class BasePlugin:
     async def handle_request(self, **data):
         if self.auth_type:
             if not self._check_auth(data):
-                return web.json_response({'error': 'unauthorized'}, status=403)
-
-        return self.request_handler(**data)
-    
+                code, response = 403, {'error': 'unauthorized'}
+        code, response = self.request_handler(**data)
+        if not isinstance(response,web.Response):
+            response_obj = web.json_response(response,status=code)
+        return response_obj   

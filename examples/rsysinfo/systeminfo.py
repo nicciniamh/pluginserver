@@ -41,10 +41,10 @@ class FSTab:
                     dd['friendly_dev'] = self._devname(line[0])
                     for i in range(0,len(keys)-1):
                         dd[keys[i]] = line[i]
-                    
+
                     #
-                    # as a matter of system information network and virtual filesystems are 
-                    # filtered out. The idea is to get a list of actual disk devices 
+                    # as a matter of system information network and virtual filesystems are
+                    # filtered out. The idea is to get a list of actual disk devices
                     #
                     if dd['fstype'] in ['ext2','ext3','ext4','fat32','vfat','exfat','fat12','fat16'
                                   'zfs','xfs','ufs','ntfs','apfs','hfs+','hfsplus','hfs','hpfs']:
@@ -90,6 +90,7 @@ class FSTab:
 
 class SystemInfo(BasePlugin):
     def __init__(self,**kwargs):
+        print("SystemInfo class init to make sure we have the right one 1:53")
         super().__init__(**kwargs)
         self.allowed_fstypes = [    'ext2','ext3','ext4','fat32','vfat','exfat','fat12','fat16'
                                     'zfs','xfs','ufs','ntfs','apfs','hfs+','hfsplus','hfs','hpfs']
@@ -180,21 +181,22 @@ class SystemInfo(BasePlugin):
     def ram_info(self,**data:dict) ->dict:    
         ram = psutil.virtual_memory()
         return {
-			'total': ram.total,
-			'free':  ram.free,
-			'used': ram.used,
-			'free': ram.free,
-			'cached': ram.cached,
-			'percent': ram.percent,
-			'active': ram.active,
-			'buffers': ram.buffers,
-			'inactive': ram.inactive,
-			'active': ram.active,
-			'shared': ram.shared,
-			'slab': ram.slab
-		}
+            'total': ram.total,
+            'free':  ram.free,
+            'used': ram.used,
+            'free': ram.free,
+            'cached': ram.cached,
+            'percent': ram.percent,
+            'active': ram.active,
+            'buffers': ram.buffers,
+            'inactive': ram.inactive,
+            'active': ram.active,
+            'shared': ram.shared,
+            'slab': ram.slab
+        }
     
-    def request_handler(self,**data:dict) ->dict:
+    def request_handler(self,**data:dict):
+        code = 200
         subpath = data.get('subpath');
         response_data = {
             'net': self.if_info(**data),
@@ -210,10 +212,9 @@ class SystemInfo(BasePlugin):
                 response_data = response_data[subpath]
             else:
                 response_data = {'Error': f"{subpath} is not a member of response_data"}
-                web.json_response(response_data,status=404); 
-        response = web.json_response(response_data); # return a response object instead of a dict
-        return response;
-
+                code = 404;
+        return code, response_data
+    
 if __name__ == "__main__":
     from pprint import pp
     import json
