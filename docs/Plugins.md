@@ -38,5 +38,5 @@ class Example(BasePlugin):
 
 ```
 
-As you can see this is very simple. If the plugin is configured for authentication the baseclass takes care of that and the aiohttp app class takes care of the transport. There's no need to worry about handling the transport between client and server. 
+As you can see this is very simple. If the plugin is configured for authentication the base class takes care of that and the aiohttp app class takes care of the transport. There's no need to worry about handling the transport between client and server. 
 
