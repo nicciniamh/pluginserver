@@ -22,5 +22,21 @@ BasePlugin has a few required and optional kwargs:
 
 When a request for a route is made, the BasePlugin `handle_request` method is called, it is given thw request variables are passed to handle_request in the **args parameter. The BasePlugin method `_check_auth` is called, and, if auth is enabled, checks the apikey argument against the configured apikey. Once these checks are made, the subclass's request_handler method is called. This method is also called with the same aguments as `BasePlugin.handle_reqest`. This method should return a str, list or dict containing the results of this request. It is vital that this data is JSON serializable. 
 
-Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers. 
+Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers.
+
+## Example Plugin
+
+This is a 'bare-bones' plugin that will run as example.py, and it's route will be /example. 
+
+```python
+from plugincore.baseplugin import BasePlugin
+
+class Example(BasePlugin):
+
+    def request_hanlder(**args):
+        return {'example': 'Hi from Example.py'}
+
+```
+
+As you can see this is very simple. If the plugin is configured for authentication the baseclass takes care of that and the aiohttp app class takes care of the transport. There's no need to worry about handling the transport between client and server. 
 
