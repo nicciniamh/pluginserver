@@ -1,0 +1,26 @@
+# Plugins
+
+Plugins provide the functional aspects of the plugin server. These classes provide the code to handle routers.  These routes must return immediatelt, however, async tasks can be started to handle background operations and the plugin can be queried later for results. The plugin should return JSON web responses, serialized JSON data, dicts, lists, or strings. These types, or their attributes, must be serializable to JSON. 
+
+Plugins should be based on `plugincore.BasePlugin`. This base class handles initialization and basic task handling so the plugin doesn't have to manage that aspect of its operation. 
+
+The BasePlugin class should be subclassed for plugins as it sets up global variables and provides utility methods. 
+
+## BasePlugin
+
+BasePlugin has a few required and optional kwargs:
+
+| kwarg       | Required | Usage
+|-------------|----------|-----------------------------------------
+| config      |    ✓     | This is the global configuration object
+| route_path  |    *     | Optionally set the route path
+| auth_type   |    *     | Set the plugin auth type, values are global or plugin
+
+(*) denotes parameters passed via the config.plugin_parms.\<plugin module\> seetting in the [configuration](Config.md). 
+
+### Request Handling with BasePlugin
+
+When a request for a route is made, the BasePlugin `handle_request` method is called, it is given thw request variables are passed to handle_request in the **args parameter. The BasePlugin method `_check_auth` is called, and, if auth is enabled, checks the apikey argument against the configured apikey. Once these checks are made, the subclass's request_handler method is called. This method is also called with the same aguments as `BasePlugin.handle_reqest`. This method should return a str, list or dict containing the results of this request. It is vital that this data is JSON serializable. 
+
+Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers. 
+
