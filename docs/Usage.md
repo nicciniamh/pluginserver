@@ -17,7 +17,7 @@ Plugins are how this server serves data for specific routes. In my pacakaged exa
 
 ### Security
 
-Security is managed a few different ways. The first is to set up [SSL](SSL.md). To be as secure as possible a key/certificate pair signed by a known Certificate Authority, such as [Let's Encrypt](letsencrypt.org), please see [Config](Config.md) for details on setting the key and certificate values and enabling [SSL](SSL.md). 
+Security is managed a few different ways. The first is to set up SSL. To be as secure as possible a key/certificate pair signed by a known Certificate Authority, such as [Let's Encrypt](https://letsencrypt.org), please see [Config](Config.md) for details on setting the key and certificate values and enabling SSL. 
 
 Self-signed certificates are not recommended and can be problematiing with other tools that make requests to the server.
 
@@ -28,7 +28,7 @@ If [CORS](CORS.md) is enabled, an additional layer of authentication, in the for
 ## Principle of Operation
 
 ### Startup
-On startup the server reads the [configuration](Config.md) file and looks for the optional [SSL](SSL.ms) and [CORS](CORS.md) [settings](Config.md). If these settings are enabled and configured properly, they are enabled. 
+On startup the server reads the [configuration](Config.md) file and looks for the optional SSL and [CORS](CORS.md) [settings](Config.md). If these settings are enabled and configured properly, they are enabled. 
 
 The [paths] section of the [configuration](Config.md) is checked for the `plugins` key and loads any Python files there as plugins. 
 
