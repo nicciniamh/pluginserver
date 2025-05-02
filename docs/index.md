@@ -9,6 +9,7 @@ Config.md
 CORS.md
 index.md
 Plugins.md
+Install.md
 ```
 
 ## Installation
