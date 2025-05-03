@@ -1,7 +1,6 @@
-# CORS - Cross-Origin Resource Sharing (CORS)
+# CORS Configuration
 
-The plugin server can be configured to send CORS origin headers based on the 
-server configuration. 
+The server can be [configured](Config.md) to use CORS - Cross-Origin Resource Sharing (CORS), 
 
 ## Summary of CORS
 
