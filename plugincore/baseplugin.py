@@ -54,7 +54,7 @@ class BasePlugin:
                 toktype='userdata'
             return token
         user_key = get_token(data) or get_custom_header_token(data) or get_user_token(data)
-        #print(f"_check_auth: type: {toktype} {self._auth_type} apikey {self._apikey}, args {data}")
+        print(f"_check_auth: type: {toktype} {self._auth_type} apikey {self._apikey}, args {data}")
 
         if self._auth_type:
             #print(f"Checking {user_key}")
