@@ -1,5 +1,5 @@
 # Authentication
-The server utilizes pre-shared keys or tokens for authenticating server requests. 
+The server utilizes pre-shared keys or tokens for authenticating server requests. There are four methods of authentication, described below. The different authentication schemes are present to allow for the greatest flexibility for the develper. 
 
 ## Configuring Authentication
 In the server [confiuration](Config.md) there are a couple of way to set up authentication. 
@@ -23,11 +23,14 @@ myplugin=auth_type=plugin&apikey=<your api key here>[&other paramaters]
 ```
 
 ## Authentication Methods for Clients
-There are four ways of passing the pre-shared apikey to the server plugin handlers: 
+There are four ways of passing the pre-shared apikey to the server plugin handlers:
 
-1. Get data, e.g., `curl https://server.tld:port/plugin?apikey=xxx` - This is not secure.
-2. Post data, e.g., `curl -X POST https://sever.tld:port/plugin -H "Content-Type: application/json" -d '{"apikey": "xxx"}'` - this is sent in the body of the request and not in the query string. This is secure.
-3. Authorization header using a bearer key, e.g., ` curl -H "Authorization: Bearer xxx" https://server.tld:port/plugin` - this is secure too. 
+| Method                | Secure | Example |
+|-----------------------|--------|---------|
+| GET data              |   ❌   | `curl https://server.tld:port/plugin?apikey=xxx`
+| POST data             |   ✓    | `curl -X POST https://sever.tld:port/plugin -H "Content-Type: application/json" -d '{"apikey": "xxx"}'`
+| Authentication Header |   ✓    | ` curl -H "Authorization: Bearer xxx" https://server.tld:port/plugin`
+| X-Custom-Auth Header  |   ✓    | `curl -H "X-Custom-Auth: xxx" https://server.tld:port/plugin`
 
-4. X-Custom-Auth header using a bearer key, e.g., ` curl -H "X-Custom-Auth: xxx" https://server.tld:port/plugin` - this is secure too. 
+Using GET data is fine for testing but this is not secure. The apikey can be exposed in logs or anywhere the URL being requested is logged. Using either header authentication scheme is more secure however, Authentication header is most preferred. 
 
