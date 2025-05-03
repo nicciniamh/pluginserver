@@ -1,5 +1,7 @@
 # SSL Configuration
 
+SSL support is optional, but provides a great deal of security when enabled.
+
 SSL is configured in the [configuration](Config.md) file using a similar section as below, which enables SSL and sets up the key and certificate to use. 
 
 ```ini
