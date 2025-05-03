@@ -36,14 +36,9 @@ Once SSL is enabled, the use of an API key is an additional layer. By passing `a
 
 If [CORS](CORS.md) is enabled, an additional layer of authentication, in the form of an ACL is used. This ensures that requests only come from hosts that match that ACL.
 
-#### Authentication
-There are four ways of passing the pre-shared apikey to the server plugin handlers: 
+# Authentication
+There are a few ways to authenticate the server operations. Please see [Authentication](Auth.md) for details. 
 
-1. Get data, e.g., `curl https://server.tld:port/plugin?apikey=xxx` - This is not secure.
-2. Post data, e.g., `curl -X POST https://sever.tld:port/plugin -H "Content-Type: application/json" -d '{"apikey": "xxx"}'` - this is sent in the body of the request and not in the query string. This is secure.
-3. Authorization header using a bearer key, e.g., ` curl -H "Authorization: Bearer xxx" https://server.tld:port/plugin` - this is secure too. 
-
-4. X-Custom-Auth header using a bearer key, e.g., ` curl -H "X-Custom-Auth: xxx" https://server.tld:port/plugin` - this is secure too. 
 
 ## Principle of Operation
 
