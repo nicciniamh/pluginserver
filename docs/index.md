@@ -7,8 +7,8 @@
 Usage.md
 Config.md
 Auth.md
-SSL.md
 CORS.md
+SSL.md
 Plugins.md
 Install.md
 ```
