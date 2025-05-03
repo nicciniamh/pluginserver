@@ -30,7 +30,7 @@ The server sets up a few API routes to allow for managing plugins. The routes ar
 
 Security is managed a few different ways. The first is to set up SSL. Please see the section on [SSL](SSL.md) for details on configuring SSL. 
 
-# Authentication
+### Authentication
 There are a few ways to authenticate the server operations. Please see [Authentication](Auth.md) for details. 
 
 ## Principle of Operation
