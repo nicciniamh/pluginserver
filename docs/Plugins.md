@@ -20,7 +20,7 @@ BasePlugin has a few required and optional kwargs:
 
 ### Request Handling with BasePlugin
 
-When a request for a route is made, the BasePlugin `handle_request` method is called, it is given thw request variables are passed to handle_request in the **args parameter. The BasePlugin method `_check_auth` is called, and, if auth is enabled, checks the apikey argument against the configured apikey. Once these checks are made, the subclass's request_handler method is called. This method is also called with the same aguments as `BasePlugin.handle_reqest`. This method should return a str, list or dict containing the results of this request. It is vital that this data is JSON serializable. 
+When a request for a route is made, the BasePlugin `handle_request` method is called, it is given thw request variables are passed to handle_request in the **args parameter. The BasePlugin method `_check_auth` is called, and, if auth is enabled, checks the apikey argument against the configured apikey. Once these checks are made, the subclass's request_handler method is called. This method is also called with the same aguments as `BasePlugin.handle_reqest`. This method should return a tuple with a code and a str, list or dict containing the results of this request. It is vital that this data is JSON serializable. The code if successful should be 200, otherwise should be reflective of the type of error that ocurresd. 
 
 Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers.
 
@@ -37,7 +37,7 @@ from plugincore.baseplugin import BasePlugin
 class Example(BasePlugin):
 
     def request_hanlder(**args):
-        return {'example': 'Hi from Example.py'}
+        return 200, {'example': 'Hi from Example.py'}
 
 ```
 
