@@ -1,5 +1,7 @@
 # Authentication
-The server utilizes pre-shared keys or tokens for authenticating server requests. There are four methods of authentication, described below. The different authentication schemes are present to allow for the greatest flexibility for the develper. 
+The server utilizes pre-shared keys or tokens for authenticating server requests. There are four methods of authentication, described below. The different authentication schemes are present to allow for the greatest flexibility for the develper.
+
+When [global authentication](#global-authentication) is enabled, the [Plugin Utilities](Usage.md#plugin-utilities) are checked for authorization. 
 
 ## Configuring Authentication
 In the server [confiuration](Config.md) there are a couple of way to set up authentication. 
