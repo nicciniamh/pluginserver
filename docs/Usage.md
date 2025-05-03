@@ -16,7 +16,9 @@ The server has various configuraiton options, which you should be familiar with.
 Plugins are how this server serves data for specific routes. In my pacakaged example, I provide one plugin that responds to a /systeminfo route. When requested this route will present back a set of system data for things like cpu, disk, packages, network interfaces, uname data. For more information, please see [Plugins](Plugins.md) where this is discussed in greater detail.
 
 #### Plugin Utilities
-The server sets up a few API routes to allow for managing plugins. The routes are: 
+The server sets up a few API routes to allow for managing plugins. When [authentication](Auth.md) is configured, the global apikey is used to authenticate these utilities.
+
+These are Plugin Utilities:
 
 | Route             | Usage
 |-------------------|-------------------------------------------
