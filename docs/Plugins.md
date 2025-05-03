@@ -22,11 +22,14 @@ BasePlugin has a few required and optional kwargs:
 
 When a request for a route is made, the BasePlugin `handle_request` method is called, it is given thw request variables are passed to handle_request in the **args parameter. The BasePlugin method `_check_auth` is called, and, if auth is enabled, checks the apikey argument against the configured apikey. Once these checks are made, the subclass's request_handler method is called. This method is also called with the same aguments as `BasePlugin.handle_reqest`. This method should return a str, list or dict containing the results of this request. It is vital that this data is JSON serializable. 
 
+#### Arguments to rquest_handler
+The request_handler method takes a single **args which is a dict-like object. This object contains key,value pairs for each of the  GET and/or POST values submitted as part of the request, if any. Additionally, the request headers are in args['request_headers']. This gives a lot of flexibility to passing data to the plugin.
+
 Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers.
 
 ## Example Plugin
 
-This is a 'bare-bones' plugin that will run as example.py, and it's route will be /example. 
+This is a 'bare-bones' plugin that will run as example.py, and it's route will be /example.
 
 ```python
 from plugincore.baseplugin import BasePlugin
