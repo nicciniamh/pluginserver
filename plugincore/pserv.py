@@ -90,12 +90,43 @@ def main():
 
 # --- Auth Helper ---
 def check_auth(data, config):
+    toktype = 'Undefined'
+    def get_token(data):
+        nonlocal toktype
+        headers = data.get('request_headers', {})
+        auth_header = headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            toktype = 'token'
+            return auth_header.split(' ', 1)[1].strip()
+        return None
+
+    def get_custom_header_token(data):
+        nonlocal toktype
+        headers = data.get('request_headers', {})
+        custom_header = headers.get('X-Custom-Auth')
+        toktype = 'custom'
+        if custom_header:
+            return custom_header.strip()
+        return None
+
+    def get_user_token(data):
+        nonlocal toktype
+        token = data.get('apikey')
+        if token:
+            toktype='userdata'
+        return token
     try:
         expected = config.auth.apikey
     except AttributeError:
-        expected = None
-    provided = data.get('apikey')
-    return expected and provided and expected == provided
+        return True
+    provided = get_token(data) or get_custom_header_token(data) or get_user_token(data)
+    #print(f"pserv:check_auth: provided/expected: {provided}/{expected}")
+    if not provided:
+        print("Returning false")
+        return False
+    auth_ok = expected == provided
+    #print("Returning {auth_ok}")
+    return auth_ok
 
 # --- Plugin Request Handler ---
 def register_plugin_route(plugin_id, instance, config):
@@ -125,16 +156,31 @@ def register_plugin_route(plugin_id, instance, config):
 
 # --- Control Routes ---
 def register_control_routes(config):
-    @routes.get('/plugins')
+    print("Registering Control Routes")
+    @routes.route('*','/plugins')
     async def plugin_list(request):
-        data = dict(request.query)
+        data = {}
+        if request.method == 'POST' and request.can_read_body:
+            try:
+                data.update(await request.json())
+            except Exception:
+                pass
+        data.update(request.query)
+        data['request_headers'] = dict(request.headers)
         if not check_auth(data, config):
             return web.json_response({'error': 'unauthorized'}, status=403)
         return corsobj.apply_headers(web.json_response({'loaded_plugins': list(manager.plugins.keys())}),request)
 
-    @routes.get('/reload/{plugin_id}')
+    @routes.route('*','/reload/{plugin_id}')
     async def reload_plugin(request):
-        data = dict(request.query)
+        data = {}
+        if request.method == 'POST' and request.can_read_body:
+            try:
+                data.update(await request.json())
+            except Exception:
+                pass
+        data.update(request.query)
+        data['request_headers'] = dict(request.headers)
         if not check_auth(data, config):
             return corsobj.apply_headers(web.json_response({'error': 'unauthorized'}, status=403),request)
 
@@ -144,9 +190,16 @@ def register_control_routes(config):
             return corsobj.apply_headers(web.json_response({'reloaded': pid, 'success': success}),request)
         return corsobj.apply_headers(web.json_response({'error': f'Plugin "{pid}" not found'}, status=404),request)
 
-    @routes.get('/reload/all')
+    @routes.route('*', '/reload/all')
     async def reload_all(request):
-        data = dict(request.query)
+        data = {}
+        if request.method == 'POST' and request.can_read_body:
+            try:
+                data.update(await request.json())
+            except Exception:
+                pass
+        data.update(request.query)
+        data['request_headers'] = dict(request.headers)
         if not check_auth(data, config):
             return corsobj.apply_headers(web.json_response({'error': 'unauthorized'}, status=403),request)
         manager.load_plugins()
