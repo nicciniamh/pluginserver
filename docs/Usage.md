@@ -18,14 +18,14 @@ Plugins are how this server serves data for specific routes. In my pacakaged exa
 #### Plugin Utilities
 The server sets up a few API routes to allow for managing plugins. When [authentication](Auth.md) is configured, the global apikey is used to authenticate these utilities.
 
-These are Plugin Utilities:
+These are the Plugin Utilities:
 
-| Route             | Usage
-|-------------------|-------------------------------------------
-| /plugins          | Retrieves a list of active plugins
-| /reload/<plugin>  | Reloadss a plgin
-| /reload/all       | Reloads all plugins
-
+| Route               | Usage
+|---------------------|-----------------------------------------------
+| /plugins            | Retrieves a list of active plugins
+| /reload/<plugin>    | Reloadss a plgin
+| /reload/all         | Reloads all plugins
+| todo: /load<plugin> | todo: load a plugin while the server is running
 
 
 ### Security
