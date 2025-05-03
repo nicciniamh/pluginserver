@@ -21,3 +21,5 @@ To install plase follow instructions in the [install](Install.md) section.
 
 ## Usage
 Please see the [Usage](Usage.md) section for an overview and usage of the server.
+
+<small>This code has been tested under Debian 12 Bookworm and Pi OS Bookworm. Other than a unix-like system, there is no other system dependent code.</small>
