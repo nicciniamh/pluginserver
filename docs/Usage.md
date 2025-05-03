@@ -28,17 +28,10 @@ The server sets up a few API routes to allow for managing plugins. The routes ar
 
 ### Security
 
-Security is managed a few different ways. The first is to set up SSL. To be as secure as possible a key/certificate pair signed by a known Certificate Authority, such as [Let's Encrypt](https://letsencrypt.org), please see [Config](Config.md) for details on setting the key and certificate values and enabling SSL. 
-
-Self-signed certificates are not recommended and can be problematiing with other tools that make requests to the server.
-
-Once SSL is enabled, the use of an API key is an additional layer. By passing `apikey=<pre-shared key>` within a *POST* request, if auth is enabled this key will be used to authenticate the request. Since this key is passed in *POST* data, it will not show in the URL or the server logs unless explicitly logged, which, generally, is not done.
-
-If [CORS](CORS.md) is enabled, an additional layer of authentication, in the form of an ACL is used. This ensures that requests only come from hosts that match that ACL.
+Security is managed a few different ways. The first is to set up SSL. Please see the section on [SSL](SSL.md) for details on configuring SSL. 
 
 # Authentication
 There are a few ways to authenticate the server operations. Please see [Authentication](Auth.md) for details. 
-
 
 ## Principle of Operation
 
