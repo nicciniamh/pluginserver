@@ -12,8 +12,10 @@ To install the latest commits to Plugin Server, use the following command:
 pip install git+https://github.com/nicciniamh/pluginserver.git
 ```
 
-If you want the example rsysinfo service, clone the repository with 
+Or you can clone [https://github.com/nicciniamh/pluginserver.git](https://github.com/nicciniamh/pluginserver.git) and install with pip install pluginserver
+
+If you just want the example rsysinfo service, clone: 
 
 ```bash
-git clone https://github.com/nicciniamh/pluginserver.git
+git clone https://github.com/nicciniamh/pluginserver_examples.git
 ```
