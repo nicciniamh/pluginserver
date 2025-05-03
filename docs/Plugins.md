@@ -25,7 +25,7 @@ When a request for a route is made, the BasePlugin `handle_request` method is ca
 Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers.
 
 #### Arguments to rquest_handler
-The request_handler method takes a single **args which is a dict-like object. This object contains key,value pairs for each of the  GET and/or POST values submitted as part of the request, if any. Additionally, the request headers are in args['request_headers']. This gives a lot of flexibility to passing data to the plugin.
+The request_handler method takes a single **args which is a dict-like object. This object contains key,value pairs for each of the  GET and/or POST values submitted as part of the request, if any. Additionally, the request headers are in `args['request_headers']`. This gives a lot of flexibility to passing data to the plugin.
 
 ## Example Plugin
 
