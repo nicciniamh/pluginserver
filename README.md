@@ -1,11 +1,8 @@
 # Plugin Server
 
-This server implements an API server using rest-like API routes. The server is implemented
-in Python using aiohttp.
+Plugin Server is a python script and library to manage a REST-like API server utilizing a plugin system to handle requests to API routes. It is built upon Python async and aiohttp.
 
-This relatively simplistic RESTapi servers use routes to determine the request handler when a request
-is made. A route is simply the ‘tail’ of the web address being requested.
-Think of a web address like `https://server.domain.tld/tail`. The tail portion is the route.
+# Installing Plugin Server
+Please see the [Installation Instructions](https://pluginserver.readthedocs.io/en/latest/Install.html) for details. 
 
-Please see the documentation at [https://pluginserver.readthedocs.io](https://pluginserver.readthedocs.io/en/latest/). 
-
+Please see the [Project Documentation](https://pluginserver.readthedocs.io/) for information on usage, configuration and more.
