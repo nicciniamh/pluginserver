@@ -15,6 +15,17 @@ The server has various configuraiton options, which you should be familiar with.
 
 Plugins are how this server serves data for specific routes. In my pacakaged example, I provide one plugin that responds to a /systeminfo route. When requested this route will present back a set of system data for things like cpu, disk, packages, network interfaces, uname data. For more information, please see [Plugins](Plugins.md) where this is discussed in greater detail.
 
+#### Plugin Utilities
+The server sets up a few API routes to allow for managing plugins. The routes are: 
+
+| Route             | Usage
+|-------------------|-------------------------------------------
+| /plugins          | Retrieves a list of active plugins
+| /reload/<plugin>  | Reloadss a plgin
+| /reload/all       | Reloads all plugins
+
+
+
 ### Security
 
 Security is managed a few different ways. The first is to set up SSL. To be as secure as possible a key/certificate pair signed by a known Certificate Authority, such as [Let's Encrypt](https://letsencrypt.org), please see [Config](Config.md) for details on setting the key and certificate values and enabling SSL. 
