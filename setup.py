@@ -4,9 +4,18 @@ from setuptools import setup
 
 setup(
     name='pluginserver',
-    version='0.5.2',
+    version='0.5.6',
     packages=['plugincore'],
     include_package_data=True,
+    description='Plugin-driven API server',
+    long_description='A REST-like API Server built on asyncio and aiohttp, leverageing plugins for actual api management',
+    author='Nicole Stevens',
+    url='https://github.com/nicciniamh/pluginserver',
+    license='Apache2.0',
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'Operating System :: OS Independent',
+    ],
     install_requires=[
         'aiohttp',
 	'aiohttp_cors',
@@ -16,4 +25,7 @@ setup(
             'pserve = plugincore.pserv:main',
         ],
     },
+    project_urls={
+        'Documentation': 'https://pluginserver.readthedocs.io', 
+    }
 )
