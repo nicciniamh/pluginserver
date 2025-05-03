@@ -1,4 +1,5 @@
 from aiohttp import web
+import base64
 
 class BasePlugin:
     """
@@ -27,9 +28,35 @@ class BasePlugin:
         self.args = dict(kwargs)
 
     def _check_auth(self,data):
-        #print(f"_check_auth: {self._auth_type} apikey {self._apikey}, args {data}")
+        toktype = 'Undefined'
+        def get_token(data):
+            nonlocal toktype
+            headers = data.get('request_headers', {})
+            auth_header = headers.get('Authorization')
+            if auth_header and auth_header.startswith('Bearer '):
+                toktype = 'token'
+                return auth_header.split(' ', 1)[1].strip()
+            return None
+
+        def get_custom_header_token(data):
+            nonlocal toktype
+            headers = data.get('request_headers', {})
+            custom_header = headers.get('X-Custom-Auth')
+            toktype = 'custom'
+            if custom_header:
+                return custom_header.strip()
+            return None
+
+        def get_user_token(data):
+            nonlocal toktype
+            token = data.get('apikey')
+            if token:
+                toktype='userdata'
+            return token
+        user_key = get_token(data) or get_custom_header_token(data) or get_user_token(data)
+        #print(f"_check_auth: type: {toktype} {self._auth_type} apikey {self._apikey}, args {data}")
+
         if self._auth_type:
-            user_key = data.get('apikey')
             #print(f"Checking {user_key}")
             if not user_key:
                 #print("Returning false")
