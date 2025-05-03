@@ -11,7 +11,7 @@ Plugins.md
 Install.md
 ```
 
-Plugin Server is a python script and library to manage a REST-like API server utilizing a plugin system to handle requests to API routes. It is built upon Python async and aiohttp. 
+Plugin Server is a Python script and library to manage a REST-like API server utilizing a plugin system to handle requests to API routes. It is built upon Python async and aiohttp. 
 
 # Getting Plugin Server
 Plugin server is at [https://github.com/nicciniamh/pluginserver](https://github.com/nicciniamh/pluginserver)
