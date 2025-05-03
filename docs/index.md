@@ -11,12 +11,11 @@ Plugins.md
 Install.md
 ```
 
-## Installation
-To install the Plugin Server, use the following command:
+# Getting Plugin Server
+Plugin server is at [https://github.com/nicciniamh/pluginserver](https://github.com/nicciniamh/pluginserver)
 
-```bash
-pip install git+https://github.com/nicciniamh/pluginserver.git
-```
+
+To install plase follow instructions in the [install](Install.md) section.
 
 ## Usage
 Please see the [Usage](Usage.md) section for an overview and usage of the server.
