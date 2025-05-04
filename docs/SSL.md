@@ -20,7 +20,7 @@ This sets up the the keys in the user's etc/certs directory for the domain confi
 
 A properly signed certificate implies a layer of trust. They can cost as little as nothing, and, when properly configured, may be used for each server on your network - provided they all use the same domain name. 
 
-To set up a free SSL key, you can use, from [EFF](https://eff.org)'s [Let's Encrypt](https://letsencrypt.org) service. 
+To set up a free SSL key  you can use, from [EFF](https://eff.org), the [Let's Encrypt](https://letsencrypt.org) service. 
 
 ### Why not use self-signed cerficates?
 
@@ -31,7 +31,7 @@ Some of the reasons not to use a signed certificate
 
 ### Pitfalls With self-signed certificates. 
 
-* Many Libraries and applications that make use of SSL require a lot of hoops to jump through when using self signed certificates. 
+* Many Libraries and applications that make use of SSL require a lot of hoops to jump through when using self-signed certificates. 
 
 * Lack of Third-Party Validation: The core issue is that a self-signed certificate isn't verified by a trusted Certificate Authority (CA). When your browser or application encounters a certificate signed by a recognized CA, it has a built-in list of these trusted entities. The CA acts as a neutral third party that has verified the identity of the website or server. With a self-signed certificate, there's no such independent verification. You're essentially saying, "Trust me, I am who I say I am," without any external proof.
 
