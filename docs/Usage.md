@@ -1,13 +1,15 @@
 
 # Using the Plugin Server
 
-This server implements an API server using rest-like API routes. The server is implemented in Python using aiohttp. 
-
-This relatively simplistic RESTapi servers use routes to determine the request handler when a request is made. A route is simply the 'tail' of the web address being requested. Think of a web address like `https://server.domain.tld/tail`. The tail portion is the route. 
-
-Requests are made up of `proto://address:port/route?parameters`. Proto would typically be http or https. Address is the ip address or hostname of the server and port is the numeric port the server listens on.
-
+This server implements an API server using rest-like API endpoints. The server is implemented in Python using aiohttp.
 The server has various configuraiton options, which you should be familiar with. These options and formats are described in the [Configuration](Config.md) document.
+
+### Endpoints and Routes
+
+* A route is a path the server uses to retrieve and serve data from a plugin. For example, /systeminfo would be a route.
+* An endpoint is the full path for the request, e.g., `https://server.domain.tld:port/systeminfo`.
+
+Requests made to an endpoint, invokes the server's route handler, which is typically a [plugin](Plugins.md) which returns data to the server, which, in turn, returns data to the device making the request.
 
 ## Features
 
