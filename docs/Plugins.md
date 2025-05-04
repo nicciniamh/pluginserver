@@ -94,7 +94,7 @@ class NetCounter:
         self._task = asyncio.create_task(self.runner())
         return self
 
-    def get_speeds(self):
+    def get_speeds(self) -> tuple:
         def format(n):
             if n > 1024**3:
                 factor, typ = 1024**3, 'bb'
@@ -105,7 +105,7 @@ class NetCounter:
             else:
                 factor, typ = 1,'b'
             return f"{round(n/factor,2)}{typ}ps"
-        return format(self.tx_bps),format(self.rx_bps)
+        return (format(self.tx_bps),format(self.rx_bps))
 
 class Netinfo(BasePlugin):
     def __init__(self,**kwargs):
@@ -133,8 +133,8 @@ class Netinfo(BasePlugin):
                     })
         return if_info
 
-    async def request_handler(self,**data:dict):
+    async def request_handler(self,**data:dict) -> tuple:
         response_data = await self.if_info(**data)
-        return 200, response_data
+        return (200, response_data)
 ```
 
