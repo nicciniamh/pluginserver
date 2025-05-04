@@ -26,7 +26,7 @@ Once the request is completed it is handed back to the server's top level route 
 
 ## Simple Example Plugin
 
-This is a 'bare-bones' plugin that will run as example.py, and its endpoint will be `proto:host.domain.tld:port/example`.
+This is a 'bare-bones' plugin that will run as example.py, and its endpoint will be `proto:host.domain.tld:port/example`. This shows the basic code the plugin must include to function as a plugin.
 
 ```python
 from plugincore.baseplugin import BasePlugin
