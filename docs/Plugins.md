@@ -4,7 +4,7 @@ Plugins provide the functional aspects of the plugin server. Each plugin sets up
 
 Plugins are implemented as Python classes and are based on `plugincore.baseplugin.BasePlugin`.
 
-These classes provide the code to handle endpoints. These endpoints must return immediately, however, async tasks can be started to handle background operations and the plugin can be queried later for results. In the file systemenfo.py, this method is calculate the network speeds (tx/rx) so that can be reaturned easilt. Please see the [Plugin Sever Examples](https://github.com/nicciniamh/pluginserver_examples) for the systeminfo plugin. 
+These classes provide the code to handle endpoints. These endpoints must return immediately, however, async tasks can be started to handle background operations and the plugin can be queried later for results. In the file systemenfo.py, this method is calculate the network speeds (tx/rx) so that can be reaturned easilt. Please see the [Complex Example Plugin](#complex-example-plugin), below, to see how this can be done.
 
 The plugin should return JSON web responses, serialized JSON data, dicts, lists, or strings. These types, or their attributes, must be serializable to JSON. My preference is for endpoints to return dictionaries as the structured data is more flexible. The choice, however, is yours. 
 
@@ -24,7 +24,7 @@ The request_handler method should return a tuple with a code and a str, list or 
 
 Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers. This completes the endpoint service.
 
-## Example Plugin
+## Simple Example Plugin
 
 This is a 'bare-bones' plugin that will run as example.py, and its endpoint will be `proto:host.domain.tld:port/example`.
 
@@ -39,4 +39,102 @@ class Example(BasePlugin):
 ```
 
 As you can see, this is very simple. If the plugin is configured for authentication the base class takes care of that and the aiohttp app class takes care of the transport. There's no need to worry about handling the transport between client and server. 
+
+## Complex Example Plugin
+This plugin defines two classes, the first is the `NetCounter`  class which wraps itself around and asyncio task to read the `psutil.net_io_counters` data. It keeps track of bytes sent and received and calulates the active data rate for a network interface. 
+
+The second class is our `BasePlugin` derived class, `Netinfo`. In its __init__ (constructor) method a list of NetCounter objects are created and each task is started. 
+
+When the a request is made to the to this endpoint a list of interfaces, their addresses and their io counters are returned in a JSON object. 
+
+```python
+#!/usr/bin/env python3
+import os
+import psutil
+import socket
+import asyncio
+from plugincore.baseplugin import BasePlugin
+
+class NetCounter:
+    """
+    This class wraps an asyncio task to collect data for the amount
+    of data received/transmitted over the course of the interval and converts
+    to bytes per second
+    """
+    def __init__(self,**kwargs):
+        self.data_ready = False
+        self.iface = kwargs.get('iface')
+        self.interval = kwargs.get('interval',1)
+        self.tx_bps = 0
+        self.rx_bps = 0
+
+        if not self.iface:
+            raise ValueError('No value for iface')
+        ifdata = psutil.net_io_counters(True)
+        if not self.iface in ifdata:
+            raise ValueError(f"{self.iface} has no stats available")
+        self.bytes_in = ifdata[self.iface].bytes_recv
+        self.bytes_out = ifdata[self.iface].bytes_sent
+
+    async def runner(self):
+        last_time = None
+        while True:
+            if last_time:
+                ifdata = psutil.net_io_counters(True)[self.iface]
+                indiff = ifdata.bytes_recv - self.bytes_in
+                outdiff = ifdata.bytes_sent - self.bytes_out
+                secs = time.time() - last_time
+                self.tx_bps = int(outdiff/secs)
+                self.rx_bps = int(indiff/secs)
+                self.data_ready = True
+            last_time = time.time()
+            await asyncio.sleep(self.interval)
+
+    async def start(self):
+        self._task = asyncio.create_task(self.runner())
+        return self
+
+    def get_speeds(self):
+        def format(n):
+            if n > 1024**3:
+                factor, typ = 1024**3, 'bb'
+            if n > 1024**2:
+                factor, typ = 1024**2, 'mb'
+            elif n > 1024:
+                factor, typ = 1024, 'kb'
+            else:
+                factor, typ = 1,'b'
+            return f"{round(n/factor,2)}{typ}ps"
+        return format(self.tx_bps),format(self.rx_bps)
+
+class Netinfo(BasePlugin):
+    def __init__(self,**kwargs):
+        self.counters = {}
+        super().__init__(**kwargs)
+        for iface in psutil.net_io_counters(True).keys():
+            self.counters[iface] = NetCounter(iface=iface)
+            await self.counters[iface].start()
+   
+    async def if_info(self,**data:dict) ->dict:
+        if_info = []
+        for iface, ifdata in psutil.net_if_addrs().items():
+            for i in ifdata:
+                if i.family == socket.AddressFamily.AF_INET:
+                    mask = sum(bin(int(octet)).count('1') for octet in i.netmask.split('.'))
+                    if iface in self.counters and self.counters[iface].data_ready:
+                        tx, rx = self.counters[iface].get_speeds()
+                    else:
+                        tx,rx = 'N/A','N/A'
+                    if_info.append({
+                        'iface': iface,
+                        'address': f"{i.address}/{mask}",
+                        "tx": tx,
+                        "rx": rx
+                    })
+        return if_info
+
+    async def request_handler(self,**data:dict):
+        response_data = await self.if_info(**data)
+        return 200, response_data
+```
 
