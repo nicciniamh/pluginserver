@@ -48,7 +48,6 @@ The second class is our `BasePlugin` derived class, `Netinfo`. In its __init__ (
 When the a request is made to the to this endpoint a list of interfaces, their addresses and their io counters are returned in a JSON object. 
 
 ```python
-#!/usr/bin/env python3
 import os
 import psutil
 import socket
@@ -62,6 +61,7 @@ class NetCounter:
     to bytes per second
     """
     def __init__(self,**kwargs):
+        super().__init__(**kwargs)
         self.data_ready = False
         self.iface = kwargs.get('iface')
         self.interval = kwargs.get('interval',1)
