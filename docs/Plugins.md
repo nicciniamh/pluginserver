@@ -4,9 +4,9 @@ Plugins provide the functional aspects of the plugin server. Each plugin sets up
 
 Plugins are implemented as Python classes and are based on `plugincore.baseplugin.BasePlugin`.
 
-These classes provide the code to handle endpoints. These endpoints must return immediatelt, however, async tasks can be started to handle background operations and the plugin can be queried later for results. In the file systemenfo.py, this method is calculate the network speeds (tx/rx) so that can be reaturned easilt. Please see the [Plugin Sever Examples](https://github.com/nicciniamh/pluginserver-examples) for the systeminfo plugin. 
+These classes provide the code to handle endpoints. These endpoints must return immediately, however, async tasks can be started to handle background operations and the plugin can be queried later for results. In the file systemenfo.py, this method is calculate the network speeds (tx/rx) so that can be reaturned easilt. Please see the [Plugin Sever Examples](https://github.com/nicciniamh/pluginserver_examples) for the systeminfo plugin. 
 
-The plugin should return JSON web responses, serialized JSON data, dicts, lists, or strings. These types, or their attributes, must be serializable to JSON. 
+The plugin should return JSON web responses, serialized JSON data, dicts, lists, or strings. These types, or their attributes, must be serializable to JSON. My preference is for endpoints to return dictionaries as the structured data is more flexible. The choice, however, is yours. 
 
 ## BasePlugin
 
