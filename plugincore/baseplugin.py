@@ -1,5 +1,6 @@
+import asyncio
 from aiohttp import web
-import base64
+import inspect
 
 class BasePlugin:
     """
@@ -56,7 +57,7 @@ class BasePlugin:
                 toktype='userdata'
             return token
         user_key = get_token(data) or get_custom_header_token(data) or get_user_token(data)
-        print(f"_check_auth: type: {toktype} {self._auth_type} apikey {self._apikey}, args {data}")
+        #print(f"_check_auth: type: {toktype} {self._auth_type} apikey {self._apikey}, args {data}")
 
         if self._auth_type:
             #print(f"Checking {user_key}")
@@ -75,7 +76,9 @@ class BasePlugin:
     async def handle_request(self, **data):
         auth_check = self._check_auth(data)
         if auth_check:
-            code, response = self.request_handler(**data)
+            result = self.request_handler(**data)
+            code, response = await result if inspect.isawaitable(result) else result
+            print(f"Got {code} - {response}")
         else:
             code, response = 403, {'error': 'unauthorized'}
         if not isinstance(response,web.Response):
