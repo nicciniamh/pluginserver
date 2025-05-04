@@ -20,11 +20,11 @@ BasePlugin has a few required and optional kwargs:
 
 ### Request Handling with BasePlugin
 
-When a request for a route is made, the BasePlugin `handle_request` method is called, it is given thw request variables are passed to handle_request in the **args parameter. The BasePlugin method `_check_auth` is called, and, if auth is enabled, checks the apikey argument against the configured apikey. Once these checks are made, the subclass's request_handler method is called. This method is also called with the same aguments as `BasePlugin.handle_reqest`. This method should return a tuple with a code and a str, list or dict containing the results of this request. It is vital that this data is JSON serializable. The code if successful should be 200, otherwise should be reflective of the type of error that ocurresd. 
+When a request for a route is made, the BasePlugin `handle_request` method is called, it is given the request variables are passed to handle_request in the **args parameter. The BasePlugin method `_check_auth` is called, and, if auth is enabled, checks the apikey argument against the configured apikey. Once these checks are made, the subclass's request_handler method is called. This method is also called with the same arguments as `BasePlugin.handle_reqest`. This method should return a tuple with a code and a str, list or dict containing the results of this request. It is vital that this data is JSON serializable. The code if successful should be 200, otherwise should be reflective of the type of error that ocurred. 
 
 Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers.
 
-#### Arguments to rquest_handler
+#### Arguments to request_handler
 The request_handler method takes a single **args which is a dict-like object. This object contains key,value pairs for each of the  GET and/or POST values submitted as part of the request, if any. Additionally, the request headers are in `args['request_headers']`. This gives a lot of flexibility to passing data to the plugin.
 
 ## Example Plugin
