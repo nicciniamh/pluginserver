@@ -33,8 +33,8 @@ from plugincore.baseplugin import BasePlugin
 
 class Example(BasePlugin):
 
-    def request_hanlder(**args):
-        return 200, {'example': 'Hi from Example.py'}
+    def request_hanlder(**args:dict) ->tuple:
+        return (200, {'example': 'Hi from Example.py'})
 
 ```
 
