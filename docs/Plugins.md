@@ -97,7 +97,7 @@ class NetCounter:
     def get_speeds(self) -> tuple:
         def format(n):
             if n > 1024**3:
-                factor, typ = 1024**3, 'bb'
+                factor, typ = 1024**3, 'gb'
             if n > 1024**2:
                 factor, typ = 1024**2, 'mb'
             elif n > 1024:
