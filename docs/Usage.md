@@ -15,19 +15,19 @@ Requests made to an endpoint, invokes the server's route handler, which is typic
 
 ### Plugins
 
-Plugins are how this server serves data for specific routes. In my pacakaged example, I provide one plugin that responds to a /systeminfo route. When requested this route will present back a set of system data for things like cpu, disk, packages, network interfaces, uname data. For more information, please see [Plugins](Plugins.md) where this is discussed in greater detail.
+Plugins perform the API handling for the server and create the API endpoints. When the server recives a request, the path portion of the URL is the endpoint, and, the server uses that path to route the request to the appropriate plugin. Plugins are discussed in detail in the [Plugins](Plugins.md) section.
 
 #### Plugin Utilities
-The server sets up a few API routes to allow for managing plugins. When [authentication](Auth.md) is configured, the global apikey is used to authenticate these utilities.
+The server sets up a few API endpoints to allow for managing plugins. When [authentication](Auth.md) is configured, the global apikey is used to authenticate these utilities.
 
 These are the Plugin Utilities:
 
-| Route               | Usage
-|---------------------|-----------------------------------------------
-| /plugins            | Retrieves a list of active plugins
-| /reload/<plugin>    | Reloadss a plgin
-| /reload/all         | Reloads all plugins
-| todo: /load<plugin> | todo: load a plugin while the server is running
+| Route                 | Usage
+|-----------------------|-----------------------------------------------
+| `/plugins`            | Retrieves a list of active plugins
+| `/reload/<plugin>`    | Reloadss a plgin
+| `/reload/all`         | Reloads all plugins
+| `todo: /load<plugin>` | todo: load a plugin while the server is running
 
 
 ### Security
@@ -45,6 +45,6 @@ On startup the server reads the [configuration](Config.md) file and looks for th
 The [paths] section of the [configuration](Config.md) is checked for the `plugins` key and loads any Python files there as plugins. 
 
 ### Operation
-Once the server is configured it listens to the port on the bindto address in the [configuration](Config.md) file. Each plugin is served by a route. The server and route become an API endpoint, which looks like `http[s]://server.domain.tld:port/[plugin]. Making a request to this endpoint will return a JSON object by the server. 
+Once the server is configured it listens to the port on the bindto address in the [configuration](Config.md) file. Each plugin is serviced by a route. The server and route become an API endpoint, which looks like `http[s]://server.domain.tld:port/<plugin>`. Making a request to this endpoint will return a JSON object by the server. 
 
 The server will run until terminated by ^C, `SIGTERM` or `SIGKILL`. 
