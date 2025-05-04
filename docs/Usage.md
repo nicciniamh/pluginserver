@@ -43,6 +43,6 @@ On startup the server reads the [configuration](Config.md) file and looks for th
 The [paths] section of the [configuration](Config.md) is checked for the `plugins` key and loads any Python files there as plugins. 
 
 ### Operation
-Once the server is configured it listens to the port on the bindto address in the [configuration](Config.md) file. Each plugin is served by a route. Making a request to http[s]://host.domain.tld:port/<plugin> will return a JSON object by the server. 
+Once the server is configured it listens to the port on the bindto address in the [configuration](Config.md) file. Each plugin is served by a route. The server and route become an API endpoint, which looks like `http[s]://server.domain.tld:port/[plugin]. Making a request to this endpoint will return a JSON object by the server. 
 
 The server will run until terminated by ^C, `SIGTERM` or `SIGKILL`. 
