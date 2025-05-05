@@ -24,6 +24,11 @@ The request_handler method should return a tuple with a code and a str, list or 
 
 Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers. This completes the endpoint service.
 
+#### terminate_plugin
+The BasePlugin class has a terminate_plugin method that takes no arguments. This method is called with the plugin is reloaded or when the app is terminating. 
+
+For a plugin that allocates resources that need to be cleaned up this provides the plugin a hook to do this by overloading the BasePlugin.terminate_plugin method.
+
 ## Simple Example Plugin
 
 This is a 'bare-bones' plugin that will run as example.py, and its endpoint will be `proto:host.domain.tld:port/example`. This shows the basic code the plugin must include to function as a plugin.
@@ -52,89 +57,107 @@ import os
 import psutil
 import socket
 import asyncio
+import time
 from plugincore.baseplugin import BasePlugin
 
 class NetCounter:
-    """
-    This class wraps an asyncio task to collect data for the amount
-    of data received/transmitted over the course of the interval and converts
-    to bytes per second
-    """
-    def __init__(self,**kwargs):
-        super().__init__(**kwargs)
-        self.data_ready = False
-        self.iface = kwargs.get('iface')
-        self.interval = kwargs.get('interval',1)
-        self.tx_bps = 0
-        self.rx_bps = 0
+	"""
+	This class wraps an asyncio task to collect data for the amount
+	of data received/transmitted over the course of the interval and converts
+	to bytes per second
+	"""
+	def __init__(self,**kwargs):
+		self.running = False
+		self.data_ready = False
+		self.iface = kwargs.get('iface')
+		self.interval = kwargs.get('interval',1)
+		self.tx_bps = 0
+		self.rx_bps = 0
 
-        if not self.iface:
-            raise ValueError('No value for iface')
-        ifdata = psutil.net_io_counters(True)
-        if not self.iface in ifdata:
-            raise ValueError(f"{self.iface} has no stats available")
-        self.bytes_in = ifdata[self.iface].bytes_recv
-        self.bytes_out = ifdata[self.iface].bytes_sent
+		if not self.iface:
+			raise ValueError('No value for iface')
+		ifdata = psutil.net_io_counters(True)
+		if not self.iface in ifdata:
+			raise ValueError(f"{self.iface} has no stats available")
+		self.bytes_in = ifdata[self.iface].bytes_recv
+		self.bytes_out = ifdata[self.iface].bytes_sent
 
-    async def runner(self):
-        last_time = None
-        while True:
-            if last_time:
-                ifdata = psutil.net_io_counters(True)[self.iface]
-                indiff = ifdata.bytes_recv - self.bytes_in
-                outdiff = ifdata.bytes_sent - self.bytes_out
-                secs = time.time() - last_time
-                self.tx_bps = int(outdiff/secs)
-                self.rx_bps = int(indiff/secs)
-                self.data_ready = True
-            last_time = time.time()
-            await asyncio.sleep(self.interval)
+	async def runner(self):
+		self.running = True
+		last_time = None
+		while self.running:
+			if last_time:
+				ifdata = psutil.net_io_counters(True)[self.iface]
+				indiff = ifdata.bytes_recv - self.bytes_in
+				outdiff = ifdata.bytes_sent - self.bytes_out
+				secs = time.time() - last_time
+				self.tx_bps = int(outdiff/secs)
+				self.rx_bps = int(indiff/secs)
+				self.data_ready = True
+			last_time = time.time()
+			await asyncio.sleep(self.interval)
+		print(f"runner for {self.iface} completed.")
 
-    async def start(self):
-        self._task = asyncio.create_task(self.runner())
-        return self
+	async def start(self):
+		self._task = asyncio.create_task(self.runner())
+		return self
 
-    def get_speeds(self) -> tuple:
-        def format(n):
-            if n > 1024**3:
-                factor, typ = 1024**3, 'gb'
-            if n > 1024**2:
-                factor, typ = 1024**2, 'mb'
-            elif n > 1024:
-                factor, typ = 1024, 'kb'
-            else:
-                factor, typ = 1,'b'
-            return f"{round(n/factor,2)}{typ}ps"
-        return (format(self.tx_bps),format(self.rx_bps))
+	def get_speeds(self) -> tuple:
+		def format(n):
+			if n > 1024**3:
+				factor, typ = 1024**3, 'gb'
+			if n > 1024**2:
+				factor, typ = 1024**2, 'mb'
+			elif n > 1024:
+				factor, typ = 1024, 'kb'
+			else:
+				factor, typ = 1,'b'
+			return f"{round(n/factor,2)}{typ}ps"
+		return (format(self.tx_bps),format(self.rx_bps))
 
 class Netinfo(BasePlugin):
-    def __init__(self,**kwargs):
-        self.counters = {}
-        super().__init__(**kwargs)
-        for iface in psutil.net_io_counters(True).keys():
-            self.counters[iface] = NetCounter(iface=iface)
-            await self.counters[iface].start()
-   
-    async def if_info(self,**data:dict) ->dict:
-        if_info = []
-        for iface, ifdata in psutil.net_if_addrs().items():
-            for i in ifdata:
-                if i.family == socket.AddressFamily.AF_INET:
-                    mask = sum(bin(int(octet)).count('1') for octet in i.netmask.split('.'))
-                    if iface in self.counters and self.counters[iface].data_ready:
-                        tx, rx = self.counters[iface].get_speeds()
-                    else:
-                        tx,rx = 'N/A','N/A'
-                    if_info.append({
-                        'iface': iface,
-                        'address': f"{i.address}/{mask}",
-                        "tx": tx,
-                        "rx": rx
-                    })
-        return if_info
+	def __init__(self,**kwargs):
+		self.kicked = False
+		self.counters = {}
+		super().__init__(**kwargs)
+		for iface in psutil.net_io_counters(True).keys():
+			self.counters[iface] = NetCounter(iface=iface)
 
-    async def request_handler(self,**data:dict) -> tuple:
-        response_data = await self.if_info(**data)
-        return (200, response_data)
+	async def kicker(self):
+		for iface in self.counters.keys():
+			await self.counters[iface].start()
+
+	async def if_info(self,**data:dict) ->dict:
+		if_info = []
+		for iface, ifdata in psutil.net_if_addrs().items():
+			for i in ifdata:
+				if i.family == socket.AddressFamily.AF_INET:
+					mask = sum(bin(int(octet)).count('1') for octet in i.netmask.split('.'))
+					if iface in self.counters and self.counters[iface].data_ready:
+						tx, rx = self.counters[iface].get_speeds()
+					else:
+						tx,rx = 'N/A','N/A'
+					if_info.append({
+						'iface': iface,
+						'address': f"{i.address}/{mask}",
+						"tx": tx,
+						"rx": rx
+					})
+		return if_info
+
+	def terminate_plugin(self):
+        """
+        set running flag for each task to False
+        """
+		for id, counter in self.counters.items():
+			counter.running = False
+
+
+	async def request_handler(self,**data:dict) -> tuple:
+		if not self.kicked:
+			await self.kicker()
+			self.kicked = True
+		response_data = await self.if_info(**data)
+		return (200, response_data)
 ```
 
