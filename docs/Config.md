@@ -31,7 +31,7 @@ The plugin server has a few required sections and items needed to perform its wo
 | Section    | Items 
 | ---------- | -------------------------------------------------------------------|
 | `[Network]`| Network parameters: bindto and listen
-| `[Paths]`  | Paths neeeded: pluginpath
+| `[Paths]`  | Paths neeeded: pluginpath, optional: `documents=rpath:fspath` 
 
 Some optional, but helpful sections
 
@@ -42,6 +42,11 @@ Some optional, but helpful sections
 | `[cors]`         | Enables and configures CORS for the server. See the CORS section for pluginserver
 | `[auth]`         | apikey - set the apikey to be used for authorization. See the Auth section for pluginserver
 
+
+## Serving Static Files
+Under `[paths]` if the optional key, documents is set, static pages may be served from the directory configured. To set this directory the parameter looks like: 
+
+`documents=html:/path/to/html` the two parts are the request path, i.e., what the client requests, and the physical path where those files are. If the request path is not specified, i.e., `documents=/path/to/html` the request path will be /doc. 
 
 
 ## Example INI file
