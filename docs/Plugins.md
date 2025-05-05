@@ -9,7 +9,7 @@ These classes provide the code to handle endpoints. These endpoints must return 
 The plugin should return JSON web responses, serialized JSON data, dicts, lists, or strings. These types, or their attributes, must be serializable to JSON. My preference is for endpoints to return dictionaries as the structured data is more flexible. The choice, however, is yours.
 
 ## Plugin Naming
-By default the name of the plugin's endpoint is the name of the class derived from BasePlugin, lowercased. The derived class can override this in its `__init__` method by setting `self._plugin_id` after `calling super()__init__` 
+By default the name of the plugin's endpoint is the name of the class derived from BasePlugin, lowercased. The derived class can override this in its `__init__` method by setting `self._plugin_id` after `calling super()__init__` or by setting the name in `[plugin_parms]` using `route_path`.
 
 ## BasePlugin
 
