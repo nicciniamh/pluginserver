@@ -30,6 +30,9 @@ class BasePlugin:
                 self._auth_type = 'plugin'
         self.args = dict(kwargs)
 
+    def terminate_plugin(self):
+        pass
+    
     def _check_auth(self,data):
         toktype = 'Undefined'
         def get_token(data):
