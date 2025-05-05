@@ -18,6 +18,21 @@ import aiohttp_cors
 from aiohttp import web
 
 corsobj = CORS()
+
+async def on_shutdown(*args):
+    """
+    call terminate_plugin for active plugins
+    """
+    global manager
+    print(("Sending plugins the terminate signal"))
+    for id, plugin in manager.plugins.items():
+        try:
+            plugin.terminate_plugin()
+        except Exception as e:
+            print(f"{type(e)} Exception unloading plugin id {id}")
+    print("Waiting for tasks")
+    await  asyncio.sleep(3)
+
 def main():
     global manager
     global globalCfg
@@ -86,13 +101,12 @@ def main():
     corsobj.setup(app,globalCfg)
 
     app.add_routes(routes)
-    web.run_app(app, host=globalCfg.network.bindto, port=globalCfg.network.port, ssl_context=ssl_ctx)
-    for id, plugin in manager.plugins.items():
-        try:
-            plugin.terminate_plugin()
-        except Exception as e:
-            print(f"{type(e)} Exception unloading plugin id {id}")
-            
+    app.on_shutdown.append(on_shutdown)
+    try:
+        web.run_app(app, host=globalCfg.network.bindto, port=globalCfg.network.port, ssl_context=ssl_ctx)
+    except KeyboardInterrupt:
+        on_shutdown()
+
 # --- Auth Helper ---
 def check_auth(data, config):
     toktype = 'Undefined'

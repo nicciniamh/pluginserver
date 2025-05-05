@@ -32,7 +32,7 @@ class BasePlugin:
 
     def terminate_plugin(self):
         pass
-    
+
     def _check_auth(self,data):
         toktype = 'Undefined'
         def get_token(data):
@@ -81,7 +81,7 @@ class BasePlugin:
         if auth_check:
             result = self.request_handler(**data)
             code, response = await result if inspect.isawaitable(result) else result
-            print(f"Got {code} - {response}")
+            #print(f"Got {code} - {response}")
         else:
             code, response = 403, {'error': 'unauthorized'}
         if not isinstance(response,web.Response):
