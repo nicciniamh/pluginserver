@@ -13,6 +13,9 @@ SSL.md
 ```
 Plugin Server is a Python script and library to manage a REST-like API server utilizing a plugin system to handle requests to API routes. It is built upon Python async and aiohttp. These API routes get served as an endpoint, with `proto://server.domain.tld:port/route`.
 
+## Intended Audience
+This document and code are intended for people familiar with Linux, System Administration and the Python programming language. 
+
 ## Installing Plugin Server
 
 To install the stable version of this project, use [PyPi](https://pypi.org/project/pluginserver/) with:
