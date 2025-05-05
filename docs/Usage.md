@@ -38,7 +38,21 @@ Security is managed a few different ways. The first is to set up SSL. Please see
 There are a few ways to authenticate the server operations. Please see [Authentication](Auth.md) for details. 
 
 ### Static File Service
-The server can be configured to serve static files. Please see the details in the [configuration](Config.md) section.
+The server can be configured to serve static files. To configure this service, the [configuration](Config.md) can be modified as below:
+
+```ini
+[paths]
+...
+documents=html:/home/nicci/test/docs
+indexfile=app.html
+```
+
+`documents=html:/path/to/html` the two parts are the request path, i.e., what the client requests, and the physical path where those files are. If the request path is not specified, i.e., `documents=/path/to/html` the request path will be /doc.
+
+By default, when the request path is not set is to use /docs/. 
+
+this key, `indexfile=app.html` sets the default name of the file to be served when a document is not specified. If this is not set, no default will be used and will generate an error if a default path is expected
+
 
 ## Principle of Operation
 
