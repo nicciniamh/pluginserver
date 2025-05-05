@@ -37,6 +37,9 @@ Security is managed a few different ways. The first is to set up SSL. Please see
 ### Authentication
 There are a few ways to authenticate the server operations. Please see [Authentication](Auth.md) for details. 
 
+### Static File Service
+The server can be configured to serve static files. Please see the details in the [configuration](Config.md) section.
+
 ## Principle of Operation
 
 ### Startup
