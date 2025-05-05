@@ -24,10 +24,10 @@ The request_handler method should return a tuple with a code and a str, list or 
 
 Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers. This completes the endpoint service.
 
-#### terminate_plugin
-The BasePlugin class has a terminate_plugin method that takes no arguments. This method is called with the plugin is reloaded or when the app is terminating. 
+### Plugin Termination
+In the case of simple plugins, termination is simply unloading the plugin. The BasePlugin class has a terminate_plugin that, by default, does nothing. 
 
-For a plugin that allocates resources that need to be cleaned up this provides the plugin a hook to do this by overloading the BasePlugin.terminate_plugin method.
+For complex plugins that might allocate resoources, create tasks or other items that need to be cleaned up the plugin may overload this method to perform that cleanup. 
 
 ## Simple Example Plugin
 
