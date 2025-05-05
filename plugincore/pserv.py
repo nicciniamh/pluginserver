@@ -87,7 +87,12 @@ def main():
 
     app.add_routes(routes)
     web.run_app(app, host=globalCfg.network.bindto, port=globalCfg.network.port, ssl_context=ssl_ctx)
-
+    for id, plugin in manager.plugins.items():
+        try:
+            plugin.terminate_plugin()
+        except Exception as e:
+            print(f"{type(e)} Exception unloading plugin id {id}")
+            
 # --- Auth Helper ---
 def check_auth(data, config):
     toktype = 'Undefined'
