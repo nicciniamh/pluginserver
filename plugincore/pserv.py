@@ -102,6 +102,14 @@ def main():
 
     app.add_routes(routes)
     app.on_shutdown.append(on_shutdown)
+    if 'documents' in globalCfg.paths:
+        if ':' in globalCfg.paths.documents:
+            dname, dpath = globalCfg.paths.documents.split(':')
+        else:
+            dname, dpath = 'docs', globalCfg.paths.documents
+        print(f"Setting up static page delivery for {dname} from {dpath}")
+        app.router.add_static(f"/{dname}/", path=dpath, name=dname)
+
     try:
         web.run_app(app, host=globalCfg.network.bindto, port=globalCfg.network.port, ssl_context=ssl_ctx)
     except KeyboardInterrupt:
