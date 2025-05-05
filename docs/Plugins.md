@@ -73,7 +73,7 @@ class NetCounter:
 		self.running = False
 		self.data_ready = False
 		self.iface = kwargs.get('iface')
-		self.interval = kwargs.get('interval',1)
+		self.interval = kwargs.get('interval',2.5)
 		self.tx_bps = 0
 		self.rx_bps = 0
 
@@ -82,8 +82,8 @@ class NetCounter:
 		ifdata = psutil.net_io_counters(True)
 		if not self.iface in ifdata:
 			raise ValueError(f"{self.iface} has no stats available")
-		self.bytes_in = ifdata[self.iface].bytes_recv
-		self.bytes_out = ifdata[self.iface].bytes_sent
+		self.bytes_in = int(ifdata[self.iface].bytes_recv)
+		self.bytes_out = int(ifdata[self.iface].bytes_sent)
 
 	async def runner(self):
 		self.running = True
@@ -93,6 +93,8 @@ class NetCounter:
 				ifdata = psutil.net_io_counters(True)[self.iface]
 				indiff = ifdata.bytes_recv - self.bytes_in
 				outdiff = ifdata.bytes_sent - self.bytes_out
+				self.bytes_in = ifdata.bytes_recv
+				self.bytes_out = ifdata.bytes_sent
 				secs = time.time() - last_time
 				self.tx_bps = int(outdiff/secs)
 				self.rx_bps = int(indiff/secs)
@@ -139,7 +141,7 @@ class Netinfo(BasePlugin):
 					if iface in self.counters and self.counters[iface].data_ready:
 						tx, rx = self.counters[iface].get_speeds()
 					else:
-						tx,rx = 'N/A','N/A'
+						tx,rx = 'n/a','n/a'
 					if_info.append({
 						'iface': iface,
 						'address': f"{i.address}/{mask}",
@@ -149,9 +151,6 @@ class Netinfo(BasePlugin):
 		return if_info
 
 	def terminate_plugin(self):
-        """
-        set running flag for each task to False
-        """
 		for id, counter in self.counters.items():
 			counter.running = False
 
