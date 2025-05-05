@@ -1,12 +1,15 @@
 # Plugins
 
-Plugins provide the functional aspects of the plugin server. Each plugin sets up an endpoint, which is handled by the servers router handlers. 
+Plugins provide the functional aspects of the plugin server. Each plugin sets up an endpoint, which is handled by the servers route handlers. 
 
 Plugins are implemented as Python classes and are based on `plugincore.baseplugin.BasePlugin`.
 
 These classes provide the code to handle endpoints. These endpoints must return immediately, however, async tasks can be started to handle background operations and the plugin can be queried later for results. In the file systemenfo.py, this method is calculate the network speeds (tx/rx) so that can be reaturned easilt. Please see the [Complex Example Plugin](#complex-example-plugin), below, to see how this can be done.
 
-The plugin should return JSON web responses, serialized JSON data, dicts, lists, or strings. These types, or their attributes, must be serializable to JSON. My preference is for endpoints to return dictionaries as the structured data is more flexible. The choice, however, is yours. 
+The plugin should return JSON web responses, serialized JSON data, dicts, lists, or strings. These types, or their attributes, must be serializable to JSON. My preference is for endpoints to return dictionaries as the structured data is more flexible. The choice, however, is yours.
+
+## Plugin Naming
+By default the name of the plugin's endpoint is the name of the class derived from BasePlugin, lowercased. The derived class can override this in its `__init__` method by setting `self._plugin_id` after `calling super()__init__` 
 
 ## BasePlugin
 
