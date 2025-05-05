@@ -103,10 +103,24 @@ def main():
     app.add_routes(routes)
     app.on_shutdown.append(on_shutdown)
     if 'documents' in globalCfg.paths:
+        """
+        if configured set up static page service
+        """
         if ':' in globalCfg.paths.documents:
             dname, dpath = globalCfg.paths.documents.split(':')
         else:
             dname, dpath = 'docs', globalCfg.paths.documents
+
+        if 'indexfile' in globalCfg.paths:
+            indexfile = globalCfg.paths.indexfile
+            print(f"indexfile for static service is {indexfile}")
+            # Route to handle /docs/ (with or without trailing slash)
+            async def default_doc_handler(request):
+                return web.FileResponse(os.path.join(dpath, indexfile))
+
+            app.router.add_get(f'/{dname}', default_doc_handler)
+            app.router.add_get(f'/{dname}/', default_doc_handler)
+
         print(f"Setting up static page delivery for {dname} from {dpath}")
         app.router.add_static(f"/{dname}/", path=dpath, name=dname)
 
