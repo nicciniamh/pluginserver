@@ -66,6 +66,10 @@ class PluginManager:
             return
 
         # Try to remove the module
+        try:
+            plugin.terminate_plugin()
+        except Exception as e:
+            print(f"Exception {type(e)} Unloading plugin - terminate_plugin threw {e}")
         module_name = plugin.__class__.__module__
         module_file = os.path.basename(module_name + ".py")
         print(f"Removing plugin {plugin_id} from module {module_name}")
