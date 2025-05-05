@@ -109,6 +109,7 @@ apikey=deadbeef
 # that plugins can use with self.config 
 # 
 plugins=${ENV:HOME}/etc/rsysinfo
+documents=html:${ENV:HOME}/Documents/webdocs
 
 [cors]
 # cors
