@@ -162,7 +162,7 @@ def register_plugin_route(plugin_id, instance, config):
     @routes.route('*', f'/{plugin_id}')
     @routes.route('*', f'/{plugin_id}/{{tail:.*}}')
     async def handle(request, inst=instance, pid=plugin_id, cfg=config):
-        print(request.remote, '- request -', pid)
+        #print(request.remote, '- request -', pid)
         plugin = manager.get_plugin(pid)
         data = {}
         if request.method == 'POST' and request.can_read_body:
