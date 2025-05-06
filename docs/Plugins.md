@@ -32,22 +32,6 @@ In the case of simple plugins, termination is simply unloading the plugin. The B
 
 For complex plugins that might allocate resoources, create tasks or other items that need to be cleaned up the plugin may overload this method to perform that cleanup. 
 
-## Simple Example Plugin
-
-This is a 'bare-bones' plugin that will run as example.py, and its endpoint will be `proto:host.domain.tld:port/example`. This shows the basic code the plugin must include to function as a plugin.
-
-```python
-from plugincore.baseplugin import BasePlugin
-
-class Example(BasePlugin):
-
-    def request_hanlder(**args:dict) ->tuple:
-        return (200, {'example': 'Hi from Example.py'})
-
-```
-
-As you can see, this is very simple. If the plugin is configured for authentication the base class takes care of that and the aiohttp app class takes care of the transport. There's no need to worry about handling the transport between client and server. 
-
 ## The File Server Plugin (fileserve.py)
 The file server plugin, fileserve.py uses aomw config values to set itself up. WHen availabe and configured the file server plugin serves files out of a configured directory. 
 
@@ -111,7 +95,26 @@ class ServeFiles(BasePlugin):
         return 200, response
 ```
 
-## Complex Example Plugin
+## Plugin Examples
+These are a few examples of plugins. 
+
+### Simple Example Plugin
+
+This is a 'bare-bones' plugin that will run as example.py, and its endpoint will be `proto:host.domain.tld:port/example`. This shows the basic code the plugin must include to function as a plugin.
+
+```python
+from plugincore.baseplugin import BasePlugin
+
+class Example(BasePlugin):
+
+    def request_hanlder(**args:dict) ->tuple:
+        return (200, {'example': 'Hi from Example.py'})
+
+```
+
+As you can see, this is very simple. If the plugin is configured for authentication the base class takes care of that and the aiohttp app class takes care of the transport. There's no need to worry about handling the transport between client and server. 
+
+### Complex Example Plugin
 This plugin defines two classes, the first is the `NetCounter`  class which wraps itself around and asyncio task to read the `psutil.net_io_counters` data. It keeps track of bytes sent and received and calulates the active data rate for a network interface. 
 
 The second class is our `BasePlugin` derived class, `Netinfo`. In its __init__ (constructor) method a list of NetCounter objects are created and each task is started. 
