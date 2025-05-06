@@ -10,12 +10,14 @@ class ServeFiles(BasePlugin):
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+        print(f"-- paths: {self.config.paths}")
         if 'documents' in self.config.paths:
             if ':' in self.config.paths.documents:
                 rpath, dpath = self.config.paths.documents.split(':',1)
             else:
                 rpath, dpath = 'docs', self.config.paths.documents
+        else:
+            raise AttributeError('File service is not configured in the configuraiton file.')
         self._plugin_id = rpath
         self.docpath = dpath
     
