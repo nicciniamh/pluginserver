@@ -48,7 +48,11 @@ indexfile=app.html
 
 By default, when the request path is not set is to use /docs/. 
 
-this key, `indexfile=app.html` sets the default name of the file to be served when a document is not specified. If this is not set, no default will be used and will generate an error if a default path is expected
+The optional `indexfile=app.html` key sets the default name of the file to be served when a document is not specified. If this is not set, index.html is used. 
+
+When a document is requested, but, the path is a directory, the indexfie will be appended to that directory and service is attempted. 
+
+When files are not found a 404 error is returned, along with HTML indicating the error. 
 
 
 ```python
