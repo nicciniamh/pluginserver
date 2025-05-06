@@ -48,7 +48,7 @@ class Example(BasePlugin):
 
 As you can see, this is very simple. If the plugin is configured for authentication the base class takes care of that and the aiohttp app class takes care of the transport. There's no need to worry about handling the transport between client and server. 
 
-## The Server Plugin
+## The File Server Plugin (fileserve.py)
 The file server plugin, fileserve.py uses aomw config values to set itself up. WHen availabe and configured the file server plugin serves files out of a configured directory. 
 
 To configure this plugin, the [configuration](Config.md) can be modified as below. In order for this configurtion work the fileserve.py plugin must me present in the `config.paths.plugins path`. 
