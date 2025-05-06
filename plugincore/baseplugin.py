@@ -85,5 +85,5 @@ class BasePlugin:
         else:
             code, response = 403, {'error': 'unauthorized'}
         if not isinstance(response,web.Response):
-            response_obj = web.json_response(response,status=code)
-        return response_obj   
+            response = web.json_response(response,status=code)
+        return response
