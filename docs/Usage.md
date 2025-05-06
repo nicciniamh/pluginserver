@@ -38,7 +38,7 @@ Security is managed a few different ways. The first is to set up SSL. Please see
 There are a few ways to authenticate the server operations. Please see [Authentication](Auth.md) for details. 
 
 ### Static File Service
-The server can be configured to serve static files. To configure this service, the [configuration](Config.md) can be modified as below:
+As this is a server based on plugins, the server component that serves static files is implemented as a plugin. Thus, the server be configured to serve static files. To configure this service, the [configuration](Config.md) can be modified as below. In order for this configurtion work the fileserve.py plugin must me present in the `config.paths.plugins path`. 
 
 ```ini
 [paths]
