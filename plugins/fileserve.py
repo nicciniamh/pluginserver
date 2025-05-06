@@ -10,7 +10,6 @@ class ServeFiles(BasePlugin):
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        print(f"-- paths: {self.config.paths}")
         if 'documents' in self.config.paths:
             if ':' in self.config.paths.documents:
                 rpath, dpath = self.config.paths.documents.split(':',1)
@@ -30,6 +29,6 @@ class ServeFiles(BasePlugin):
         with open(filename) as f:
             content=f.read()
         mime = mimetypes.guess_type(filename)[0]
-        print(f" -- {filename} - {mime}")
+        #print(f" -- {filename} - {mime}")
         response = web.Response(text=content, content_type=mime)
         return 200, response
