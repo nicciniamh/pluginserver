@@ -55,10 +55,13 @@ class PluginManager:
             kwargs = self.kwargs.copy()
             kwargs.update(adict)
             kwargs['config'] = self.config
-            instance = cls(**kwargs)
-            print(f"Loaded plugin {cls.__name__}: {instance}")
-            self.plugins[instance._get_plugin_id()] = instance
-
+            try:
+                instance = cls(**kwargs)
+                print(f"Loaded plugin {cls.__name__}: {instance}")
+                self.plugins[instance._get_plugin_id()] = instance
+            except Exception as e:
+                print(f"Exception loading plugin from {path}: {e}")
+                
     def remove_plugin(self, plugin_id: str):
         plugin = self.plugins.pop(plugin_id, None)
         if not plugin:
