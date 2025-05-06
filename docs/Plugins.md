@@ -33,7 +33,7 @@ In the case of simple plugins, termination is simply unloading the plugin. The B
 For complex plugins that might allocate resoources, create tasks or other items that need to be cleaned up the plugin may overload this method to perform that cleanup. 
 
 ## The File Server Plugin (fileserve.py)
-The file server plugin, fileserve.py uses aomw config values to set itself up. WHen availabe and configured the file server plugin serves files out of a configured directory. 
+The file server plugin, fileserve.py, uses aomw config values to set itself up. WHen availabe and configured the file server plugin serves files out of a configured directory. 
 
 To configure this plugin, the [configuration](Config.md) can be modified as below. In order for this configurtion work the fileserve.py plugin must me present in the `config.paths.plugins path`. 
 
