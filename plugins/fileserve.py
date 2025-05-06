@@ -3,11 +3,11 @@ import mimetypes
 from plugincore.baseplugin import BasePlugin
 from aiohttp import web
 
-def mime_for_buffer(buffer):
-    mime = magic.Magic(mime=True)
-    return  mime.from_buffer(buffer)
-
 class ServeFiles(BasePlugin):
+    """
+    This plugin serves files. See the config document for setting up serving of files, 
+    this plugin must be present for file serving to work.
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
