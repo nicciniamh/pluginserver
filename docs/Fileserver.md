@@ -3,7 +3,7 @@
 To serve files with pluginserver the fileserve.py plugin must be used. This plugin accepts requests for files, and serves their content to the requesting client. 
 
 ## Files and Content
-When a file is requested, the mime type of the file is determined using the Python mimetypes pacage so the correct content type headers before sending the content to the client. In the event the mime type cannot be determined the default of `'application/octet-stream` is used.
+When a file is requested, the mime type of the file is determined using the Python mimetypes pacage so the correct content type headers before sending the content to the client. In the event the mime type cannot be determined the default of `'application/octet-stream'` is used.
 
 ##  Path Resuolution
 The fileserve plugin is configured for a base path, or, document root using configuration paramaters, discussed below in the [Plugin Configuration](#plugin-configuraiton) below. 
