@@ -14,6 +14,7 @@ from plugincore.cors import CORS
 routes = web.RouteTableDef()
 manager = None  # PluginManager reference
 globalCfg = None
+config_file = None
 import aiohttp_cors
 from aiohttp import web
 
@@ -36,6 +37,7 @@ async def on_shutdown(*args):
 def main():
     global manager
     global globalCfg
+    global config_file
 
     we_are = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
@@ -45,11 +47,12 @@ def main():
         )
     parser.add_argument('-i','--ini-file',default=f"{we_are}.ini",type=str, metavar='ini-file',help='Use an alternate config file')
     args = parser.parse_args()
+    config_file = args.ini_file
 
     signal.signal(signal.SIGHUP, reload)
     print(f"{we_are}({os.getpid()}): Installed SIGHUP handler for reload.")
 
-    globalCfg = configfile.Config(file=args.ini_file)
+    globalCfg = configfile.Config(file=config_file)
 
     ssl_ctx = None
     ssl_cert, ssl_key = (None, None)
@@ -192,6 +195,8 @@ def register_control_routes(config):
 
     @routes.route('*','/reload/{plugin_id}')
     async def reload_plugin(request):
+        global globalCfg
+        global config_file
         data = {}
         if request.method == 'POST' and request.can_read_body:
             try:
@@ -205,12 +210,16 @@ def register_control_routes(config):
 
         pid = request.match_info['plugin_id']
         if pid in manager.plugins:
+            globalCfg = configfile.Config(file=config_file)
             success = manager.reload_plugin(pid)
             return corsobj.apply_headers(web.json_response({'reloaded': pid, 'success': success}),request)
         return corsobj.apply_headers(web.json_response({'error': f'Plugin "{pid}" not found'}, status=404),request)
 
     @routes.route('*', '/reload/all')
     async def reload_all(request):
+        global globalCfg
+        global config_file
+        globalCfg = configfile.Config(file=config_file)
         data = {}
         if request.method == 'POST' and request.can_read_body:
             try:
