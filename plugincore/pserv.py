@@ -211,6 +211,7 @@ def register_control_routes(config):
         pid = request.match_info['plugin_id']
         if pid in manager.plugins:
             globalCfg = configfile.Config(file=config_file)
+            manager.reset_config(globalCfg)
             success = manager.reload_plugin(pid)
             return corsobj.apply_headers(web.json_response({'reloaded': pid, 'success': success}),request)
         return corsobj.apply_headers(web.json_response({'error': f'Plugin "{pid}" not found'}, status=404),request)
@@ -220,6 +221,7 @@ def register_control_routes(config):
         global globalCfg
         global config_file
         globalCfg = configfile.Config(file=config_file)
+        manager.reset_config(globalCfg)
         data = {}
         if request.method == 'POST' and request.can_read_body:
             try:
