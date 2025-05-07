@@ -16,16 +16,24 @@ class ServeFiles(BasePlugin):
             if ':' in self.config.paths.documents:
                 rpath, dpath = self.config.paths.documents.split(':',1)
             else:
-                rpath, dpath = 'docs', self.config.paths.documents
+                rpath, dpath = os.path.basename(self.config.paths.documents), self.config.paths.documents
         else:
             raise AttributeError('File service is not configured in the configuraiton file.')
         self._plugin_id = rpath
         self.docpath = dpath
 
     def error_html(self,code,message):
-        return f"""<html><head><title>{message}</title></head><body><h1>{code} - {message}</h1></body></html>"""
+        return f"""<html>
+            <head>
+                <title>{message}</title>
+            </head>
+            <body>
+                <h1>{code} - {message}</h1>
+            </body>
+        </html>"""
     
     async def request_handler(self, **args):
+        code = 200
         filename = args.get('subpath',self.index_file) or self.index_file
         if not filename:
             return 400,web.Response(status=400, text=self.error_html(400,'Bad Request'), content_type='text/html')
@@ -33,9 +41,23 @@ class ServeFiles(BasePlugin):
         if not os.path.exists(filename):
             return 404,web.Response(status=404, text=self.error_html(404,"Resource Not Found"), content_type='text/html')
         if os.path.isdir(filename): # If we get a directory, append the indexfile name
-            filename = os.path.join(filename,self.index_file) 
-        with open(filename) as f:
-            content=f.read()
-        mime = mimetypes.guess_type(filename)[0]
-        response = web.Response(text=content, content_type=mime)
-        return 200, response
+            filename = os.path.join(filename,self.index_file)
+        try:
+            mime = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+            print(f"Serving file {filename} with type {mime}")
+            with open(filename,'rb') as f:
+                content=f.read()
+        except FileNotFoundError as e:
+            code, message = 404, 'Resource Not Found'
+        except PermissionError as e:
+            code, message = 403, 'Permission Denied'
+        except OSError as e:
+            code, message = 400, f"An unexpected OS error occurred: {e}"
+        except Exception as e:
+            code, message = 400, f"An unexpected error occurred: {e}"
+        finally:
+            if code != 200:
+                response = web.Response(status=code, text=self.error_html(code, message), content_type='text/html')
+            else:
+                response = web.Response(body=content, content_type=mime)
+        return code, response
