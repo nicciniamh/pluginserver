@@ -64,4 +64,5 @@ In addition to the [Plugin Utilities](#plugin-utilities), the server itself can 
 kill -HUP <pid>
 ```
 
-This will let the server gracefully shutdown and restart. 
+### Program Termination
+This will let the server gracefully shutdown and restart. The program will gracefully terminate on SIGINT, SIGTERM and SIGABRT. 
