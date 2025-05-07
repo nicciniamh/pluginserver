@@ -11,6 +11,9 @@ The server has various configuraiton options, which you should be familiar with.
 
 Requests made to an endpoint, invokes the server's route handler, which is typically a [plugin](Plugins.md) which returns data to the server, which, in turn, returns data to the device making the request.
 
+#### File Endpoints
+If the [fileserver plugin](Fileserver.md) is enabled, endpoints within the file server's base request paht, are served as files.
+
 ## Features
 
 ### Plugins
