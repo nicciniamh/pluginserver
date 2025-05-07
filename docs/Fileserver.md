@@ -5,6 +5,21 @@ To serve files with pluginserver the fileserve.py plugin must be used. This plug
 ## Files and Content
 When a file is requested, the mime type of the file is determined using the Python mimetypes pacage so the correct content type headers before sending the content to the client. In the event the mime type cannot be determined the default of `'application/octet-stream'` is used.
 
+### Markdown
+Markdown ia an incredibly simple and useful way to express data. This plugin automatically converts markdown to html. The first top-level heading in the markdown file is used for the page title. This is inserted into the html template before serving the file. 
+
+#### Markdown Styling
+Markdown styling is done by default with markdown.css and highlight.css (the latter for syntax hightlighting). The highlighting CSS I used in testing was generated with pygments using `pygmentize -S default -f html > highlight.css`. 
+
+#### Markdown Configuration
+To set the names for the css used, the following config parameters are used. These files should be path relative to the request path, so, for example, `[proto]://server.domain.tld:port/docs/markdown.css` would need to be located in the documents path specified in the [paths](#plugin-configuraiton) key.
+
+```
+[markdown]
+markdown_css=markdown.css
+highlight_css=highlight.css
+```
+
 ##  Path Resuolution
 The fileserve plugin is configured for a base path, or, document root using configuration paramaters, discussed below in the [Plugin Configuration](#plugin-configuraiton) below. 
 
