@@ -1,4 +1,4 @@
-# The File Server Plugin (fileserve.py)
+# File Serving
 
 To serve files with pluginserver the fileserve.py plugin must be used. This plugin accepts requests for files, and serves their content to the requesting client. 
 
