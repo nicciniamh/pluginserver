@@ -20,6 +20,21 @@ from aiohttp import web
 
 corsobj = CORS()
 
+def get_signal_name(signal_number):
+    """
+    Converts a signal number to its symbolic name.
+
+    Args:
+        signal_number (int): The signal number.
+
+    Returns:
+        str or None: The signal name if found, otherwise None.
+    """
+    for name in dir(signal):
+        if name.startswith("SIG") and getattr(signal, name) == signal_number:
+            return name
+    return None
+
 async def on_shutdown(*args):
     """
     call terminate_plugin for active plugins
@@ -51,6 +66,8 @@ def main():
 
     signal.signal(signal.SIGHUP, reload)
     print(f"{we_are}({os.getpid()}): Installed SIGHUP handler for reload.")
+    for sig in [signal.SIGINT, signal.SIGTERM, signal.SIGABRT]:
+        signal.signal(sig, terminate)
 
     globalCfg = configfile.Config(file=config_file)
 
@@ -241,8 +258,15 @@ async def maybe_async(value):
 
 # ---- Reload handler ----
 def reload(signum, frame):
-    print("Received SIGHUP, restarting...")
+    print(f"Received {get_signal_name(signum)} - Terminating plugins")
+    on_shutdown()
+    print("restarting...")
     os.execl(sys.executable, sys.executable, *sys.argv)
+
+def terminate(signum, frame):
+    print(f"Received {get_signal_name(signum)} - Terminating plugins")
+    on_shutdown()
+    sys.exit(signum)
 
 if __name__ == "__main__":
     main()

@@ -32,6 +32,7 @@ These are the Plugin Utilities:
 | `/reload/all`         | Reloads all plugins
 | `todo: /load<plugin>` | todo: load a plugin while the server is running
 
+When reloading the plugin utilities the [config](Config.md) file is re-read and any changes will be reflected in the reloaded plugin. 
 
 ### Security
 
@@ -54,3 +55,13 @@ The [paths] section of the [configuration](Config.md) is checked for the `plugin
 Once the server is configured it listens to the port on the bindto address in the [configuration](Config.md) file. Each plugin is serviced by a route. The server and route become an API endpoint, which looks like `http[s]://server.domain.tld:port/<plugin>`. Making a request to this endpoint will return a JSON object by the server. 
 
 The server will run until terminated by ^C, `SIGTERM` or `SIGKILL`. 
+
+
+### Prograam Control
+In addition to the [Plugin Utilities](#plugin-utilities), the server itself can be reloaded with a SIGHUB signal. On Startup the server prints its PID. So do restart it you can run
+
+```bash
+kill -HUP <pid>
+```
+
+This will let the server gracefully shutdown and restart. 
