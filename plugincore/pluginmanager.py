@@ -19,6 +19,10 @@ class PluginManager:
         self.config = kwargs.get('config')
         self.kwargs = dict(kwargs)
 
+    
+    def reset_config(self,config):
+        self.config = config
+
     def _load_module(self, filepath: str) -> types.ModuleType:
         mod_name = os.path.basename(filepath).replace(".py", "")
         spec = importlib.util.spec_from_file_location(mod_name, filepath)
