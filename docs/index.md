@@ -7,6 +7,7 @@
 Usage.md
 Config.md
 Plugins.md
+Fileserver.md
 Auth.md
 CORS.md
 SSL.md
