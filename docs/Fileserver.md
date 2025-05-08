@@ -11,6 +11,13 @@ Markdown ia an incredibly simple and useful way to express data. This plugin aut
 #### Markdown Styling
 Markdown styling is done by default with markdown.css and highlight.css (the latter for syntax hightlighting). The highlighting CSS I used in testing was generated with pygments using `pygmentize -S default -f html > highlight.css`. 
 
+#### Markdown Extensions
+For Makrdown files there are two items that may be used in the files: 
+* `@TITLE=Document Title`
+* `@INCLUDE=[<path>/]file`
+
+For include, absolute paths may be used, and, are converted for user path with tilde expansion. Relative paths are made relative to the directory the markdown is served from. Included data is not parsed, it is included verbatim. 
+
 #### Markdown Configuration
 To set the names for the css used, the following config parameters are used. These files should be path relative to the request path, so, for example, `[proto]://server.domain.tld:port/docs/markdown.css` would need to be located in the documents path specified in the [paths](#plugin-configuraiton) key.
 
