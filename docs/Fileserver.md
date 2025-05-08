@@ -63,11 +63,28 @@ The file server plugin, fileserve.py, uses some config values to set itself up. 
 To configure this plugin, the [configuration](Config.md) can be modified as below. In order for this configurtion work the fileserve.py plugin must me present in the `config.paths.plugins path`. 
 
 ```ini
-[paths]
-...
-documents=html:${ENV:HOME}}/apidocs
+[file_server]
+# These options control fileservice if fileserer.py is used.
+# Keys are
+# common_log: This sets the file name for the access log in CLF
+# markdown_css: This is the CSS used for markdown, default is markdown_css
+# highlight_css: This is the CSS used to highlight code in markdwon
+# indexfile: This is the name of he file used when a directory path is used.
+# documents: This is used to set the document root for fileservice
+#   The format of this is:
+#        documents=html:/path/to/documents
+#                        ^-- Path to documents
+#                   ^-- This is the root request path if not supplied, docs is used
+#  The default is: documents=docs
+#
+common_log=~/test/access_log
+markdown_css=markdown.css
+highlight_css=highlight.css
+documents=html:/path/to/docs
 indexfile=app.html
 ```
+
+A note about CLF. CLF is part of the LogJam logging module, howwever the LogJam.common_log function writes to the CLF format log independently. 
 
 ### Documents Path
 The documents path may have two parts, but, one is required. The parts are separated by a colon (:). The path component before the colon is used to 'name' the request path. If this part is not defined, the basename of the path supplied is used as the request path. These variables 

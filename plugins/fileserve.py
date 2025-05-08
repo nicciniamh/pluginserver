@@ -4,10 +4,8 @@ import mimetypes
 import re
 from plugincore.baseplugin import BasePlugin
 from aiohttp import web
-try:
-    import markdown
-except ImportError:
-    markdown = None
+from bs4 import BeautifulSoup
+import markdown
 
 class ServeFiles(BasePlugin):
     """
@@ -18,26 +16,48 @@ class ServeFiles(BasePlugin):
         super().__init__(**kwargs)
         self.highlight_css = 'highlight.css'
         self.markdown_css = 'markdown.css'
-        if 'markdown' in self.config:
-            for k in ['highlight','markdown']:
-                if f"{k}_css" in self.config.markdown:
-                    css = self.config.markdown.get(f"{k}_css",f"{k}.css") or f"{k}.css"
-                    setattr(self,f"{k}_css",css)
-        else:
-            self.log(f"{type(self)}: WARN: No markdown section in {self.config}")
-        self.index_file = self.config.paths.get('indexfile','index.html') or 'index.html'
+        self.log_file = None
+        if not 'file_server' in self.config:
+            raise AttributeError("Cannot find 'file_server' in config.")
+        if 'common_log' in self.config.file_server:
+            self.log_file = os.path.expanduser(self.config.file_server.common_log)
+            self.log(f"Serve access log is {self.log_file}")
+        for k in ['highlight','markdown']:
+            if f"{k}_css" in self.config.file_server:
+                css = self.config.file_server.get(f"{k}_css",f"{k}.css") or f"{k}.css"
+                setattr(self,f"{k}_css",css)
+        self.index_file = self.config.file_server.get('indexfile','index.html') or 'index.html'
         self.log(f"{type(self)}: index_file is {self.index_file}")
         self.log(f"{type(self)}: markdown_css is {self.markdown_css}")
         self.log(f"{type(self)}: highlight_css is {self.highlight_css}")
-        if 'documents' in self.config.paths:
-            if ':' in self.config.paths.documents:
-                rpath, dpath = self.config.paths.documents.split(':',1)
+        if 'documents' in self.config.file_server:
+            if ':' in self.config.file_server.documents:
+                rpath, dpath = self.config.file_server.documents.split(':',1)
             else:
-                rpath, dpath = os.path.basename(self.config.paths.documents), self.config.paths.documents
+                rpath, dpath = os.path.basename(self.config.file_server.documents), self.config.file_server.documents
         else:
             raise AttributeError('File service is not configured in the configuraiton file.')
         self._plugin_id = rpath
         self.docpath = dpath
+
+    def retitle_document(self, text, title):
+        soup = BeautifulSoup(text, "html.parser")
+        print(f"Setting document title to {title}")
+        # Modify existing title
+        if soup.title:
+            soup.title.string = title
+        else:
+            # Create a <title> tag if it doesn't exist
+            new_title = soup.new_tag("title")
+            new_title.string = title
+            if soup.head:
+                soup.head.append(new_title)
+            else:
+                new_head = soup.new_tag("head")
+                new_head.append(new_title)
+                soup.html.insert(0, new_head)
+        return str(soup)
+
 
     def error_html(self,code,message):
         return f"""<html>
@@ -58,13 +78,13 @@ class ServeFiles(BasePlugin):
 
         def replacer(match):
             nonlocal title
-            tag = match.group(1)   # e.g. 'INCLUDE'
-            value = match.group(2) # e.g. 'filename.txt'
+            tag = match.group(1)
+            value = match.group(2)
 
             handler = processors.get(f"@{tag}")
             if handler:
                 return handler(value)
-            return match.group(0)  # return unchanged if no handler
+            return match.group(0)
 
         def include_file(name):
             nonlocal basepath
@@ -82,6 +102,7 @@ class ServeFiles(BasePlugin):
             return text
 
         def set_title(new_title):
+            self.log(f"New document title {new_title}")
             nonlocal title
             title = new_title
             return ''
@@ -132,7 +153,7 @@ class ServeFiles(BasePlugin):
         mdhtml = f"""<!DOCTYPE html>
             <html>
             <head>
-                <title>{title}</title>
+                <title></title>
                 <link rel="stylesheet" href="{self.markdown_css}">
                 <link rel="stylesheet" href="{self.highlight_css}">
             </head>
@@ -142,7 +163,7 @@ class ServeFiles(BasePlugin):
             </html>"""
         if byte_data:
             return mdhtml.encode('utf-8')
-        return mdhtml
+        return self.retitle_document(mdhtml,title)
 
     async def request_handler(self, **args):
         code = 200
@@ -168,7 +189,9 @@ class ServeFiles(BasePlugin):
                 mime = 'text/html'
                 content = self.markdown_to_html(content,base_path)
             if 'text/html' in mime:
-                foo, content = self.preprocess(content,base_path)
+                title, content = self.preprocess(content,base_path)
+                if title:
+                    self.retitle_document(content,title)
                 if not isinstance(content,bytes):
                     content = content.encode('utf-8')
 
@@ -188,6 +211,13 @@ class ServeFiles(BasePlugin):
             if code != 200:
                 response = web.Response(status=code, text=self.error_html(code, message), content_type='text/html')
             else:
-                self.log(f"{args['client_ip']} - {filename} {os.path.getsize(filename)} OK")
+                #self.log(f"{args['client_ip']} - {filename} {os.path.getsize(filename)} OK")
+                print(self.log.common_log(
+                    ip=args['client_ip'],
+                    path=filename,
+                    size=os.path.getsize(filename),
+                    method = args['request'].method,
+                    protocol = 'HTTPS' if 'SSL' in self.config else 'HTTP',
+                    status='OK',file=self.log_file))
                 response = web.Response(body=content, content_type=mime)
         return code, response
