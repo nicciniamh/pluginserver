@@ -17,6 +17,7 @@ class PluginManager:
         self.plugins: Dict[str, baseplugin.BasePlugin] = {}
         self.modules: Dict[str, types.ModuleType] = {}
         self.config = kwargs.get('config')
+        self.log = kwargs.get('log')
         self.kwargs = dict(kwargs)
 
     
@@ -59,6 +60,7 @@ class PluginManager:
             kwargs = self.kwargs.copy()
             kwargs.update(adict)
             kwargs['config'] = self.config
+            kwargs['log'] = self.log or print
             try:
                 instance = cls(**kwargs)
                 print(f"Loaded plugin {cls.__name__}: {instance}")

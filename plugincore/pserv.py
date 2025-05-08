@@ -9,6 +9,7 @@ import signal
 from aiohttp import web
 from plugincore import pluginmanager
 from plugincore import configfile
+from plugincore import logjam
 import aiohttp_cors
 from plugincore.cors import CORS
 routes = web.RouteTableDef()
@@ -19,6 +20,8 @@ import aiohttp_cors
 from aiohttp import web
 
 corsobj = CORS()
+
+log = print
 
 def get_signal_name(signal_number):
     """
@@ -40,16 +43,17 @@ async def on_shutdown(*args):
     call terminate_plugin for active plugins
     """
     global manager
-    print(("Sending plugins the terminate signal"))
+    log(("Sending plugins the terminate signal"))
     for id, plugin in manager.plugins.items():
         try:
             plugin.terminate_plugin()
         except Exception as e:
-            print(f"{type(e)} Exception unloading plugin id {id}")
-    print("Waiting for tasks")
+            log(f"{type(e)} Exception unloading plugin id {id}")
+    log("Waiting for tasks")
     await  asyncio.sleep(3)
 
 def main():
+    global log
     global manager
     global globalCfg
     global config_file
@@ -61,15 +65,24 @@ def main():
         epilog="Nicole Stevens/2025"
         )
     parser.add_argument('-i','--ini-file',default=f"{we_are}.ini",type=str, metavar='ini-file',help='Use an alternate config file')
+    parser.add_argument('-l','--log',default=None,type=str,metavar='file',help='Set a log file')
     args = parser.parse_args()
     config_file = args.ini_file
-
+    if args.log:
+        log = logjam.LogJam(file=args.log, name=we_are)
+    else:
+        log = logjam.LogJam(name=we_are)
     signal.signal(signal.SIGHUP, reload)
-    print(f"{we_are}({os.getpid()}): Installed SIGHUP handler for reload.")
+    log(f"{we_are}({os.getpid()}): Installed SIGHUP handler for reload.")
     for sig in [signal.SIGINT, signal.SIGTERM, signal.SIGABRT]:
-        signal.signal(sig, terminate)
+        try:
+            signal.signal(sig, terminate)
+            log(f"Installed signal handler for {get_signal_name(sig)} to {terminate}")
+        except Exception as e:
+            log(f"{type(e)} setting signal handler for {sig}")
 
     globalCfg = configfile.Config(file=config_file)
+    
 
     ssl_ctx = None
     ssl_cert, ssl_key = (None, None)
@@ -84,26 +97,26 @@ def main():
         pass
     if ssl_key and ssl_cert and enabled:
         ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        print("======== SSL Configuration ========")
-        print(f"SSL key {ssl_key}")
-        print(f"SSL certificate: {ssl_cert}")
-        print(f"SSL context {ssl_ctx}")
-        print("Loading SSL cert chain")
+        log("======== SSL Configuration ========")
+        log(f"SSL key {ssl_key}")
+        log(f"SSL certificate: {ssl_cert}")
+        log(f"SSL context {ssl_ctx}")
+        log("Loading SSL cert chain")
         try:
             ssl_ctx.load_cert_chain(ssl_cert, ssl_key, None)
         except Exception as e:
-            print(f"Exception({type(e)}): Error loading ssl_cert_chain({ssl_cert},{ssl_key})")
+            log(f"Exception({type(e)}): Error loading ssl_cert_chain({ssl_cert},{ssl_key})")
             for p in [ssl_cert, ssl_key]:
                 if not os.path.exists(p):
-                    print(f"Path: {p} not found.")
+                    log(f"Path: {p} not found.")
             ssl_ctx = None
-        print("End of SSL configuration.")
+        log("End of SSL configuration.")
 
     if not 'paths' in globalCfg:
-        print(f"no paths in {globalCfg}")
+        log(f"no paths in {globalCfg}")
         sys.exit(1)
-    print("======== Loading plugin modules ========")
-    manager = pluginmanager.PluginManager(globalCfg.paths.plugins, config=globalCfg)
+    log("======== Loading plugin modules ========")
+    manager = pluginmanager.PluginManager(globalCfg.paths.plugins, config=globalCfg, log=log)
     manager.load_plugins()
 
     # Register plugin routes
@@ -159,31 +172,32 @@ def check_auth(data, config):
     except AttributeError:
         return True
     provided = get_token(data) or get_custom_header_token(data) or get_user_token(data)
-    #print(f"pserv:check_auth: provided/expected: {provided}/{expected}")
+    #log(f"pserv:check_auth: provided/expected: {provided}/{expected}")
     if not provided:
-        print("Returning false")
+        log("Returning false")
         return False
     auth_ok = expected == provided
-    #print("Returning {auth_ok}")
+    #log("Returning {auth_ok}")
     return auth_ok
 
 # --- Plugin Request Handler ---
 def register_plugin_route(plugin_id, instance, config):
-    print(f"Registering route: /{plugin_id} to {instance}")
+    global log
+    log(f"Registering route: /{plugin_id} to {instance}")
 
     @routes.route('*', f'/{plugin_id}')
     @routes.route('*', f'/{plugin_id}/{{tail:.*}}')
     async def handle(request, inst=instance, pid=plugin_id, cfg=config):
-        #print(request.remote, '- request -', pid)
+        global log
+        #log(request.remote, '- request -', pid)
         plugin = manager.get_plugin(pid)
-        data = {}
+        data = {'log': log, 'request_headers': dict(request.headers), 'request': request}
         if request.method == 'POST' and request.can_read_body:
             try:
                 data.update(await request.json())
             except Exception:
                 pass
         data.update(request.query)
-        data['request_headers'] = dict(request.headers)
         # You can also capture `tail` if you want to use the subpath
         try:
             data['subpath'] = request.match_info['tail']
@@ -195,7 +209,8 @@ def register_plugin_route(plugin_id, instance, config):
 
 # --- Control Routes ---
 def register_control_routes(config):
-    print("Registering Control Routes")
+    global log
+    log("Registering Control Routes")
     @routes.route('*','/plugins')
     async def plugin_list(request):
         data = {}
@@ -235,6 +250,7 @@ def register_control_routes(config):
 
     @routes.route('*', '/reload/all')
     async def reload_all(request):
+        global log
         global globalCfg
         global config_file
         globalCfg = configfile.Config(file=config_file)
@@ -258,13 +274,15 @@ async def maybe_async(value):
 
 # ---- Reload handler ----
 def reload(signum, frame):
-    print(f"Received {get_signal_name(signum)} - Terminating plugins")
+    global log
+    log(f"Received {get_signal_name(signum)} - Terminating plugins",flush=True)
     on_shutdown()
-    print("restarting...")
+    log("restarting...")
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 def terminate(signum, frame):
-    print(f"Received {get_signal_name(signum)} - Terminating plugins")
+    global log
+    log(f"Received {get_signal_name(signum)} - Terminating plugins",flush=True)
     on_shutdown()
     sys.exit(signum)
 

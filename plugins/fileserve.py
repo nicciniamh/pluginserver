@@ -15,6 +15,9 @@ class ServeFiles(BasePlugin):
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.log = kwargs.get('log',print)
+        if self.log == print:
+            print(f"No log in {kwargs}")
         self.highlight_css = 'highlight.css'
         self.markdown_css = 'markdown.css'
         if 'markdown' in self.config:
@@ -22,11 +25,11 @@ class ServeFiles(BasePlugin):
                 css = self.config.markdown.get(f"{k}_css",f"{k}.css") or f"{k}.css"
                 setattr(self,f"{k}_css",css)
         else:
-            print(f"{type(self)}: WARN: No markdown section in {self.config}")
+            self.log(f"{type(self)}: WARN: No markdown section in {self.config}")
         self.index_file = self.config.paths.get('indexfile','index.html') or 'index.html'
-        print(f"{type(self)}: index_file is {self.index_file}")
-        print(f"{type(self)}: markdown_css is {self.markdown_css}")
-        print(f"{type(self)}: highlight_css is {self.highlight_css}")
+        self.log(f"{type(self)}: index_file is {self.index_file}")
+        self.log(f"{type(self)}: markdown_css is {self.markdown_css}")
+        self.log(f"{type(self)}: highlight_css is {self.highlight_css}")
         if 'documents' in self.config.paths:
             if ':' in self.config.paths.documents:
                 rpath, dpath = self.config.paths.documents.split(':',1)
@@ -67,14 +70,29 @@ class ServeFiles(BasePlugin):
                 {mdhtml}
             </body>
             </html>"""
-    
+
+    def get_client_ip(self,request):
+        # Check proxy headers first
+        forwarded_for = request.headers.get('X-Forwarded-For')
+        if forwarded_for:
+            return forwarded_for.split(',')[0].strip()
+
+        # Fall back to transport address
+        peername = request.transport.get_extra_info('peername')
+        return peername[0] if peername else 'unknown'
+
     async def request_handler(self, **args):
         code = 200
+        request = args.get('request',{'type': 'unknown'})
+        client_ip = self.get_client_ip(args.get('request'))
+
         filename = args.get('subpath',self.index_file) or self.index_file
         if not filename:
+            self.log.error(f"{client_ip} - {request.type} - No file name supplied")
             return 400,web.Response(status=400, text=self.error_html(400,'Bad Request'), content_type='text/html')
         filename = os.path.join(self.docpath,filename)
         if not os.path.exists(filename):
+            self.log.error(f"{client_ip} - {request.type} - {filename} not found")
             return 404,web.Response(status=404, text=self.error_html(404,"Resource Not Found"), content_type='text/html')
         if os.path.isdir(filename): # If we get a directory, append the indexfile name
             filename = os.path.join(filename,self.index_file)
@@ -88,18 +106,23 @@ class ServeFiles(BasePlugin):
                 content = self.markdown_to_html(content)
                 content = content.encode('utf-8')
 
-            print(f"Serving file {filename} with type {mime}")
+
         except FileNotFoundError as e:
+            self.log.error(f"{client_ip} - {request.type} - {filename} not found: {e}")
             code, message = 404, 'Resource Not Found'
         except PermissionError as e:
+            self.log.error(f"{client_ip} - {request.type} - {filename} access denied: {e}")
             code, message = 403, 'Permission Denied'
         except OSError as e:
+            self.log.error(f"{client_ip} - {request.type} - {filename} OSError: {e}")
             code, message = 400, f"An unexpected OS error occurred: {e}"
         except Exception as e:
+            self.log.error(f"{client_ip} - {request.type} - {filename} Unexpected exception: {e}")
             code, message = 400, f"An unexpected error occurred: {e}"
         finally:
             if code != 200:
                 response = web.Response(status=code, text=self.error_html(code, message), content_type='text/html')
             else:
+                self.log(f"{client_ip} - {filename} {os.path.getsize(filename)} OK")
                 response = web.Response(body=content, content_type=mime)
         return code, response
