@@ -11,14 +11,38 @@ Markdown ia an incredibly simple and useful way to express data. This plugin aut
 #### Markdown Styling
 Markdown styling is done by default with markdown.css and highlight.css (the latter for syntax hightlighting). The highlighting CSS I used in testing was generated with pygments using `pygmentize -S default -f html > highlight.css`. 
 
-#### Markdown Extensions
-For Makrdown files there are two items that may be used in the files: 
-* `@TITLE=Document Title@` - Set the markdown document title
-* `@INCLUDE=[<path>/]file@` - Include the contents of file
-* `@TIME=+format@` - Include the time of day with optionl format
-* `@FILETIME=filepath+format@` - Include the modification time of filepath with optional +format
+#### Magic Variables
+The file server plugin parses output (html or markdown) for 'magic' variables. These are:
+
+| Variable   | Usage
+|------------|----------------------------------------------------------------------------------|
+| `@TITLE=Document Title@`    | Set the markdown document title
+| `@INCLUDE=[<path>/]file@`   | Include the contents of file
+| `@TIME=+format@`            | Include the time of day with optionl format
+| `@FILETIME=filepath+format@`| Include the modification time of filepath with optional +format
 
 For include, absolute paths may be used, and, are converted for user path with tilde expansion. Relative paths are made relative to the directory the markdown is served from. Included data is not parsed, it is included verbatim. 
+
+For formatting dates the format should be a plus sign (+) followd by one or more of the following:
+
+| Code | Usage
+|------|-------------------------------------------------------
+| %Y   | Year with century as a decimal number.
+| %m   | Month as a decimal number [01,12].
+| %d   | Day of the month as a decimal number [01,31].
+| %H   | Hour (24-hour clock) as a decimal number [00,23].
+| %M   | Minute as a decimal number [00,59].
+| %S   | Second as a decimal number [00,61].
+| %z   | Time zone offset from UTC.
+| %a   | Locale's abbreviated weekday name.
+| %A   | Locale's full weekday name.
+| %b   | Locale's abbreviated month name.
+| %B   | Locale's full month name.
+| %c   | Locale's appropriate date and time representation.
+| %I   | Hour (12-hour clock) as a decimal number [01,12].
+| %p   | Locale's equivalent of either AM or PM.
+
+A magic variable of `@TIME+%A %B $d, %Y@` would yield a string like "Monday May 5, 2025"
 
 #### Markdown Configuration
 To set the names for the css used, the following config parameters are used. These files should be path relative to the request path, so, for example, `[proto]://server.domain.tld:port/docs/markdown.css` would need to be located in the documents path specified in the [paths](#plugin-configuraiton) key.
