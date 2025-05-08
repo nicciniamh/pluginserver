@@ -55,6 +55,7 @@ class ServeFiles(BasePlugin):
         if isinstance(text,bytes):
             byte_data = True
             text = text.decode('utf-8')   
+
         def replacer(match):
             nonlocal title
             tag = match.group(1)   # e.g. 'INCLUDE'
@@ -69,12 +70,16 @@ class ServeFiles(BasePlugin):
             nonlocal basepath
             name = os.path.expanduser(name)
             filename = os.path.join(basepath, name) if not os.path.isabs(name) else name
+            mime = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
             try:
                 with open(filename) as f:
-                    return f.read()
-            except Exception:
-                print(f"Failed to include {filename}")
-                return f"<!-- Failed to include: {filename} -->"
+                    text = f.read()
+            except Exception as e:
+                self.log.error(f"{type(e)} including file {filename}")
+                return ""
+            if 'markdown' in mime:
+                text = self.markdown_to_html(text,basepath)
+            return text
 
         def set_title(new_title):
             nonlocal title
@@ -95,7 +100,7 @@ class ServeFiles(BasePlugin):
             try:
                 st = os.stat(filename)
             except Exception as e:
-                print(f"{type(e)}: Couln't stat {filename}")
+                self.log.error(f"{type(e)}: file_data_time: Couln't stat {filename}")
                 return ""
             if not format:
                 format = '%T %D'
@@ -156,13 +161,17 @@ class ServeFiles(BasePlugin):
 
         mime = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
         try:
+            base_path = os.path.dirname(filename)
             with open(filename,'rb') as f:
                 content=f.read()
             if 'text/markdown' in mime:
                 mime = 'text/html'
-                content = self.markdown_to_html(content,os.path.dirname(filename))
+                content = self.markdown_to_html(content,base_path)
             if 'text/html' in mime:
-                _, content = self.preprocess(content,os.path.dirname(content.decode('utf-8')))
+                foo, content = self.preprocess(content,base_path)
+                if not isinstance(content,bytes):
+                    content = content.encode('utf-8')
+
         except FileNotFoundError as e:
             self.log.error(f"{args['client_ip']} - {request.method} - {filename} not found: {e}")
             code, message = 404, 'Resource Not Found'
