@@ -25,21 +25,14 @@ For include, absolute paths may be used, and, are converted for user path with t
 
 For formatting dates the format should be a plus sign (+) followd by one or more of the following:
 
-| Code | Usage
-|------|-------------------------------------------------------
-| %Y   | Year with century as a decimal number.
-| %m   | Month as a decimal number [01,12].
-| %d   | Day of the month as a decimal number [01,31].
-| %H   | Hour (24-hour clock) as a decimal number [00,23].
-| %M   | Minute as a decimal number [00,59].
-| %S   | Second as a decimal number [00,61].
-| %z   | Time zone offset from UTC.
-| %a   | Locale's abbreviated weekday name.
-| %A   | Locale's full weekday name.
-| %b   | Locale's abbreviated month name.
-| %B   | Locale's full month name.
-| %c   | Locale's appropriate date and time representation.
-| %I   | Hour (12-hour clock) as a decimal number [01,12].
+| Code | Usage                                            | Code | Usage                                 |
+|------|--------------------------------------------------|------|----------------------------------------
+| %Y   | Year with century as a decimal number.           | %m   | Month as a decimal number [01,12].
+| %d   | Day of the month as a decimal number [01,31].    | %H   | Hour (24-hour clock) as a decimal number [00,23].                                   | %M   | Minute as a decimal number [00,59].
+| %S   | Second as a decimal number [00,61].              | %z   | Time zone offset from UTC.
+| %a   | Locale's abbreviated weekday name.               | %A   | Locale's full weekday name.
+| %b   | Locale's abbreviated month name.                 | %B   | Locale's full month name.
+| %c   | Locale's appropriate date and time representation. | %I   | Hour (12-hour clock) as a decimal number [01,12].
 | %p   | Locale's equivalent of either AM or PM.
 
 A magic variable of `@TIME+%A %B $d, %Y@` would yield a string like "Monday May 5, 2025"
