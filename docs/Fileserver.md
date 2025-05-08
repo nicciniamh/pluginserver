@@ -13,8 +13,10 @@ Markdown styling is done by default with markdown.css and highlight.css (the lat
 
 #### Markdown Extensions
 For Makrdown files there are two items that may be used in the files: 
-* `@TITLE=Document Title`
-* `@INCLUDE=[<path>/]file`
+* `@TITLE=Document Title@` - Set the markdown document title
+* `@INCLUDE=[<path>/]file@` - Include the contents of file
+* `@TIME=+format@` - Include the time of day with optionl format
+* `@FILETIME=filepath+format@` - Include the modification time of filepath with optional +format
 
 For include, absolute paths may be used, and, are converted for user path with tilde expansion. Relative paths are made relative to the directory the markdown is served from. Included data is not parsed, it is included verbatim. 
 
