@@ -38,7 +38,7 @@ For formatting dates the format should be a plus sign (+) followd by one or more
 A magic variable of `@TIME+%A %B $d, %Y@` would yield a string like "Monday May 5, 2025"
 
 #### Markdown Configuration
-To set the names for the css used, the following config parameters are used. These files should be path relative to the request path, so, for example, `[proto]://server.domain.tld:port/docs/markdown.css` would need to be located in the documents path specified in the configuration. Please see [file_server](#plugin-configuraiton) for the detailed configuration settings.
+To set the names for the css used, the following config parameters are used. These files should be path relative to the request path, so, for example, `[proto]://server.domain.tld:port/docs/markdown.css` would need to be located in the documents path specified in the configuration. Please see [Plugin Configuration](#plugin-configuraiton) for the detailed configuration settings.
 
 ##  Path Resuolution
 The fileserve plugin is configured for a base path, or, document root using configuration paramaters, discussed below in the [Plugin Configuration](#plugin-configuraiton) below. 
