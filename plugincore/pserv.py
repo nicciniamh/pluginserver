@@ -66,10 +66,11 @@ def main():
         )
     parser.add_argument('-i','--ini-file',default=f"{we_are}.ini",type=str, metavar='ini-file',help='Use an alternate config file')
     parser.add_argument('-l','--log',default=None,type=str,metavar='file',help='Set a log file')
+    parser.add_argument('-v','--level',default='DEBUG',type=str,help="Logging level, INFO DEBUG ERROR CRITICAL", metavar='level')
     args = parser.parse_args()
     config_file = args.ini_file
     if args.log:
-        log = logjam.LogJam(file=args.log, name=we_are)
+        log = logjam.LogJam(file=args.log, name=we_are,level=args.level)
     else:
         log = logjam.LogJam(name=we_are)
     signal.signal(signal.SIGHUP, reload)

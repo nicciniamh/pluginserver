@@ -11,6 +11,8 @@ class BasePlugin:
     def __init__(self, **kwargs):
         self._auth_type = None
         self._apikey = None
+        self.log = kwargs.get('log',print)
+
         self.config = kwargs.get('config')
         self._plugin_id = kwargs.get('route_path',self.__class__.__name__.lower())
         auth = kwargs.get('auth_type')
@@ -29,6 +31,16 @@ class BasePlugin:
                     raise ValueError('Auth is plugin but no plugin apikey')
                 self._auth_type = 'plugin'
         self.args = dict(kwargs)
+
+    def _get_client_ip(self,request):
+        # Check proxy headers first
+        forwarded_for = request.headers.get('X-Forwarded-For')
+        if forwarded_for:
+            return forwarded_for.split(',')[0].strip()
+
+        # Fall back to transport address
+        peername = request.transport.get_extra_info('peername')
+        return peername[0] if peername else 'unknown'
 
     def terminate_plugin(self):
         pass
@@ -78,11 +90,13 @@ class BasePlugin:
     
     async def handle_request(self, **data):
         auth_check = self._check_auth(data)
+        data['client_ip'] = self._get_client_ip(data.get('request'))
         if auth_check:
             result = self.request_handler(**data)
             code, response = await result if inspect.isawaitable(result) else result
             #print(f"Got {code} - {response}")
         else:
+            self.log.error(f"{data['client_ip']} - request for {self._plugin_id} - Not authorized")
             code, response = 403, {'error': 'unauthorized'}
         if not isinstance(response,web.Response):
             response = web.json_response(response,status=code)
