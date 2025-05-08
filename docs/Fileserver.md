@@ -9,7 +9,12 @@ When a file is requested, the mime type of the file is determined using the Pyth
 Markdown ia an incredibly simple and useful way to express data. This plugin automatically converts markdown to html. The first top-level heading in the markdown file is used for the page title. This is inserted into the html template before serving the file. 
 
 #### Markdown Styling
-Markdown styling is done by default with markdown.css and highlight.css (the latter for syntax hightlighting). The highlighting CSS I used in testing was generated with pygments using `pygmentize -S default -f html > highlight.css`. 
+Markdown styling is done by default with markdown.css and highlight.css (the latter for syntax hightlighting). The highlighting CSS I used in testing was generated with Pygments. To generate 
+a highlight_css using Pygments you can run the command: 
+
+```bash
+pygmentize -S <style> -f html > highlight.css # use pygmentize -L styles for list
+```
 
 #### Magic Variables
 The file server plugin parses output (html or markdown) for 'magic' variables. These are:
