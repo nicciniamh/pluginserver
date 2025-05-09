@@ -32,3 +32,14 @@ source_suffix = {
     '.md': 'markdown',
 }
 master_doc = 'index'
+
+html_theme_options = {
+    "light_css_variables": {
+        "color-brand-primary": "#4e9a06",
+        "color-brand-content": "#4e9a06",
+    },
+    "dark_css_variables": {
+        "color-brand-primary": "#8ae234",
+        "color-brand-content": "#8ae234",
+    },
+}
