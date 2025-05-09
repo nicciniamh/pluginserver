@@ -34,7 +34,7 @@ master_doc = 'index'
 html_theme = "furo"
 
 # Set default Pygments style
-pygments_style = "github"  # Set a default; we'll handle the dynamic switch with JS
+pygments_style = "github-dark"  # Set a default; we'll handle the dynamic switch with JS
 
 html_theme_options = {
     "light_css_variables": {
@@ -46,9 +46,8 @@ html_theme_options = {
         "color-brand-content": "#8ae234",
     },
 }
-html_js_files = [
-    "toggle_pygments.js",  # Include the JS file
-]
 html_theme_options = {
-    "code_theme": "github-dark",  # Set default syntax highlighting theme
+    'code_highlighter': 'pygments',
+    'pygments_style': 'github-dark',  # Correct way to reference it
 }
+
