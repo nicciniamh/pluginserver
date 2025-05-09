@@ -2,3 +2,5 @@ sphinx
 myst-parser
 furo
 pygments==2.14.0
+pygments-github-style
+
