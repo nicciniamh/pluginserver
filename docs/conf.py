@@ -46,8 +46,3 @@ html_theme_options = {
         "color-brand-content": "#8ae234",
     },
 }
-html_theme_options = {
-    'code_highlighter': 'pygments',
-    'pygments_style': 'github-dark',  # Correct way to reference it
-}
-
