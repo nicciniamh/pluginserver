@@ -1,3 +1,3 @@
 sphinx
 myst-parser
-groundwork-sphinx-theme
+pydata-sphinx-theme
