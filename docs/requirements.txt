@@ -1,3 +1,3 @@
 sphinx
 myst-parser
-sphinx-rtd-theme
+groundwork-theme
