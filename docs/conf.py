@@ -13,7 +13,8 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinx_rtd_theme' # You can try changing this to a theme provided by sphinx-github-style if it has one
+#html_theme = 'sphinx_rtd_theme' # You can try changing this to a theme provided by sphinx-github-style if it has one
+html_theme = 'github-dark'
 
 source_suffix = {
     '.rst': 'restructuredtext',
