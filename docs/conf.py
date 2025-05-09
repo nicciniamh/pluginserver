@@ -38,3 +38,7 @@ master_doc = 'index'
 # -- Additional configurations ----------------------------------------------
 # If you have any other settings like `autodoc` or `intersphinx`, include them here.
 
+html_css_files = [
+    'custom.css',  # Include the custom CSS file
+]
+
