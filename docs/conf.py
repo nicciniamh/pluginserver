@@ -6,7 +6,6 @@ author = 'Nicole Stevens'
 # -- General configuration ---------------------------------------------------
 extensions = [
     'myst_parser',  # Markdown support
-    'sphinx_github_style',  # GitHub style theme
 ]
 
 templates_path = ['_templates']
