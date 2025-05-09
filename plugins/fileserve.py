@@ -6,6 +6,7 @@ from plugincore.baseplugin import BasePlugin
 from aiohttp import web
 from bs4 import BeautifulSoup
 import markdown
+import aiofiles
 
 class ServeFiles(BasePlugin):
     """
@@ -19,9 +20,14 @@ class ServeFiles(BasePlugin):
         self.log_file = None
         if not 'file_server' in self.config:
             raise AttributeError("Cannot find 'file_server' in config.")
+
         if 'common_log' in self.config.file_server:
             self.log_file = os.path.expanduser(self.config.file_server.common_log)
             self.log(f"Serve access log is {self.log_file}")
+
+        self.log_includes = self.config.file_server.get('log_includes',False) or False
+        if self.log_includes:
+            self.log('Magic includes are logged')        
         for k in ['highlight','markdown']:
             if f"{k}_css" in self.config.file_server:
                 css = self.config.file_server.get(f"{k}_css",f"{k}.css") or f"{k}.css"
@@ -37,6 +43,7 @@ class ServeFiles(BasePlugin):
                 rpath, dpath = os.path.basename(self.config.file_server.documents), self.config.file_server.documents
         else:
             raise AttributeError('File service is not configured in the configuraiton file.')
+        dpath=os.path.expanduser(dpath)
         self._plugin_id = rpath
         self.docpath = dpath
 
@@ -69,59 +76,83 @@ class ServeFiles(BasePlugin):
             </body>
         </html>"""
 
-    def preprocess(self, text, basepath):
+    async def preprocess(self, text, basepath, **args):
         title = ""
-        byte_data = False
         if isinstance(text,bytes):
-            byte_data = True
             text = text.decode('utf-8')   
 
-        def replacer(match):
+        async def run_async_replacer(text,pattern):
+            output = []
+            last_end = 0
+            for match in re.finditer(pattern, text):
+                output.append(text[last_end:match.start()])
+                replacement = await replacer(match)
+                output.append(replacement)
+                last_end = match.end()
+            output.append(text[last_end:])
+            return ''.join(output)
+
+
+        async def replacer(match):
             nonlocal title
             tag = match.group(1)
             value = match.group(2)
 
             handler = processors.get(f"@{tag}")
             if handler:
-                return handler(value)
+                return await handler(value)
             return match.group(0)
 
-        def include_file(name):
+        async def include_file(name):
             nonlocal basepath
+            nonlocal args
+            text = ""
             name = os.path.expanduser(name)
             filename = os.path.join(basepath, name) if not os.path.isabs(name) else name
             mime = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
             try:
-                with open(filename) as f:
-                    text = f.read()
+                async with aiofiles.open(filename) as f:
+                    text = await f.read()
+                    _, text = await self.preprocess(text,basepath,**args)
+                    self.log.debug(f"include file {filename} clf is {self.log_includes}")
+                    if self.log_includes:
+                        self.log.common_log(
+                            ip=args.get('client_ip','system') or 'system',
+                            path=filename,
+                            size=len(text),
+                            method = "include",
+                            protocol = "file",
+                            status='OK',file=self.log_file)
+
             except Exception as e:
-                self.log.error(f"{type(e)} including file {filename}")
-                return ""
+                message = f"{type(e)} including file {filename}: {e}"
+                self.log.exception(message)
+                return message
             if 'markdown' in mime:
                 text = self.markdown_to_html(text,basepath)
             return text
 
-        def set_title(new_title):
+        async def set_title(new_title):
             self.log(f"New document title {new_title}")
             nonlocal title
             title = new_title
             return ''
         
-        def cloctime(format):
+        async def cloctime(format):
             if not format.startswith('+'):
                 format = format[1:]
             else:
                 format = '%T'
             return time.strftime(format, time.localtime(time.time()))
         
-        def file_date_time(info):
+        async def file_date_time(info):
             nonlocal basepath
             filename,format = info.split('+',1)
             filename = os.path.join(basepath, filename) if not os.path.isabs(filename) else filename
             try:
                 st = os.stat(filename)
             except Exception as e:
-                self.log.error(f"{type(e)}: file_data_time: Couln't stat {filename}")
+                self.log.error(f"{type(e)}: file_data_time: Coulnd't stat {filename}")
                 return ""
             if not format:
                 format = '%T %D'
@@ -134,26 +165,21 @@ class ServeFiles(BasePlugin):
             '@TIME': cloctime
         }
 
-        # Match e.g. @TITLE=SomeTitle/ or @INCLUDE=path/to/file
-        pattern = r'@([A-Za-z]+)=([^@]+)@'
-        text = re.sub(pattern, replacer, text)
-        if byte_data:
-            return title, text.encode('utf-8')
+        pattern = r'(?<!\\)@([A-Za-z]+)=([^@]+)@'
+        text = await run_async_replacer(text,pattern)
+        text = re.sub(r'\\(@[A-Za-z]+=[^@]+@)', r'\1', text)
         return title, text
     
-    def markdown_to_html(self, text, basepath):
-        byte_data = False
+    def markdown_to_html(self, text,title=""):
         if isinstance(text,bytes):
-            byte_data = True
             text = text.decode('utf-8')   
 
-        title, text = self.preprocess(text,basepath)
-        mdhtml = markdown.markdown(text, extensions=['fenced_code', 'codehilite'])
+        mdhtml = markdown.markdown(text, extensions=['fenced_code', 'tables','codehilite'])
 
         mdhtml = f"""<!DOCTYPE html>
             <html>
             <head>
-                <title></title>
+                <title>{title}</title>
                 <link rel="stylesheet" href="{self.markdown_css}">
                 <link rel="stylesheet" href="{self.highlight_css}">
             </head>
@@ -161,12 +187,10 @@ class ServeFiles(BasePlugin):
             {mdhtml}
             </body>
             </html>"""
-        if byte_data:
-            return mdhtml.encode('utf-8')
-        return self.retitle_document(mdhtml,title)
+        return mdhtml
 
     async def request_handler(self, **args):
-        code = 200
+        code, message, title = 200, '', ''
         request = args.get('request',{'type': 'unknown'})
 
         filename = args.get('subpath',self.index_file) or self.index_file
@@ -183,17 +207,18 @@ class ServeFiles(BasePlugin):
         mime = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
         try:
             base_path = os.path.dirname(filename)
-            with open(filename,'rb') as f:
-                content=f.read()
+            async with aiofiles.open(filename,'rb') as f:
+                content = await f.read()
             if 'text/markdown' in mime:
                 mime = 'text/html'
-                content = self.markdown_to_html(content,base_path)
-            if 'text/html' in mime:
-                title, content = self.preprocess(content,base_path)
-                if title:
-                    self.retitle_document(content,title)
-                if not isinstance(content,bytes):
-                    content = content.encode('utf-8')
+                title, content = await self.preprocess(content,base_path,**args)
+                content = self.markdown_to_html(content,title)
+            elif 'text/html' in mime:
+                title, content = await self.preprocess(content,base_path,**args)
+            if title:
+                content = self.retitle_document(content,title)
+            if not isinstance(content,bytes):
+                content = content.encode('utf-8')
 
         except FileNotFoundError as e:
             self.log.error(f"{args['client_ip']} - {request.method} - {filename} not found: {e}")
@@ -212,12 +237,12 @@ class ServeFiles(BasePlugin):
                 response = web.Response(status=code, text=self.error_html(code, message), content_type='text/html')
             else:
                 #self.log(f"{args['client_ip']} - {filename} {os.path.getsize(filename)} OK")
-                print(self.log.common_log(
+                self.log.common_log(
                     ip=args['client_ip'],
                     path=filename,
-                    size=os.path.getsize(filename),
+                    size=len(content),
                     method = args['request'].method,
                     protocol = 'HTTPS' if 'SSL' in self.config else 'HTTP',
-                    status='OK',file=self.log_file))
+                    status='OK',file=self.log_file)
                 response = web.Response(body=content, content_type=mime)
         return code, response
