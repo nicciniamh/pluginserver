@@ -43,4 +43,13 @@ html_theme_options = {
         "color-brand-content": "#8ae234",
     },
 }
-pygments_style='github'
+
+def get_pygments_theme():
+    # Furo theme has built-in toggle, we'll use a simple check for mode
+    if os.environ.get('USER_MODE', 'light') == 'dark':  # Default to 'light' if not set
+        return 'github-dark'
+    else:
+        return 'github-light'
+
+# Set the Pygments style based on the theme mode
+pygments_style = get_pygments_theme()
