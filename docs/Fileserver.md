@@ -30,15 +30,34 @@ For include, absolute paths may be used, and, are converted for user path with t
 
 For formatting dates the format should be a plus sign (+) followd by one or more of the following:
 
-| Code | Usage                                            | Code | Usage                                 |
-|------|--------------------------------------------------|------|----------------------------------------
-| %Y   | Year with century as a decimal number.           | %m   | Month as a decimal number [01,12].
-| %d   | Day of the month as a decimal number [01,31].    | %H   | Hour (24-hour clock) as a decimal number [00,23].                                   | %M   | Minute as a decimal number [00,59].
-| %S   | Second as a decimal number [00,61].              | %z   | Time zone offset from UTC.
-| %a   | Locale's abbreviated weekday name.               | %A   | Locale's full weekday name.
-| %b   | Locale's abbreviated month name.                 | %B   | Locale's full month name.
-| %c   | Locale's appropriate date and time representation. | %I   | Hour (12-hour clock) as a decimal number [01,12].
-| %p   | Locale's equivalent of either AM or PM.
+| Code | Meaning                                                                         |
+|------|---------------------------------------------------------------------------------|
+|  %a  | Locale’s abbreviated weekday name                                               |
+|  %A  | Locale’s full weekday name                                                      |
+|  %b  | Locale’s abbreviated month name                                                 |
+|  %B  | Locale’s full month name                                                        |
+|  %c  | Locale’s appropriate date and time representation                               |
+|  %d  | Day of the month as a decimal number [01,31]                                    |
+|  %f  | Microseconds as a decimal number|%H|Hour (24-hour clock) as a decimal number    |
+|  %I  | Hour (12-hour clock) as a decimal number [01,12]                                |
+|  %j  | Day of the year as a decimal number [001,366]                                   |
+|  %m  | Month as a decimal number [01,12]                                               |
+|  %M  | Minute as a decimal number [00,59]                                              |
+|  %p  | Locale’s equivalent of either AM or PM                                          |
+|  %S  | Second as a decimal number [00,61]                                              |
+|  %U  | Week number of the year (Sunday as the first day of the week) as a decimal number|
+|  %u  | Day of the week (Monday is 1; Sunday is 7) as a decimal number [1, 7]           |
+|  %w  | Weekday as a decimal number [0(Sunday),6]                                       |
+|  %W  | Week number of the year (Monday as the first day of the week) as a decimal number|
+|  %x  | Locale’s appropriate date representation                                        |
+|  %X  | Locale’s appropriate time representation                                        |
+|  %y  | Year without century as a decimal number [00,99]                                |
+|  %Y  | Year with century as a decimal number                                           |
+|  %z  | Time zone offset indicating a positive or negative time difference from UTC/GMT |
+|  %Z  | Time zone name (no characters if no time zone exists).                          |
+|  %V  | ISO 8601 week number (as a decimal number [01,53]).                             |
+|  %%  | A literal '%' character                                                         |
+
 
 A magic variable of `@TIME+%A %B $d, %Y@` would yield a string like "Monday May 5, 2025"
 

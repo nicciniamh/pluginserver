@@ -21,6 +21,11 @@ class ServeFiles(BasePlugin):
         if not 'file_server' in self.config:
             raise AttributeError("Cannot find 'file_server' in config.")
 
+        if 'markdown_envelope' in self.config.file_server:
+            self.markdown_envelope = os.path.expanduser(self.config.file_server.markdown_envelope)
+            self.log(f"Using {self.markdown_envelope} for markdown envelope")
+        else:
+            self.markdown_envelope = None
         if 'common_log' in self.config.file_server:
             self.log_file = os.path.expanduser(self.config.file_server.common_log)
             self.log(f"Serve access log is {self.log_file}")
@@ -171,23 +176,46 @@ class ServeFiles(BasePlugin):
         return title, text
     
     def markdown_to_html(self, text,title=""):
+        def render_template(pattern, template: str) -> str:
+            nonlocal title
+            nonlocal mdhtml
+            context = {
+                "title": title,
+                "markdown_css": self.markdown_css,
+                "highlight_css": self.highlight_css,
+                "mdhtml": mdhtml
+            }
+
+            def replacer(match):
+                key = match.group(1)
+                return str(context.get(key, match.group(0)))  # Leave unchanged if key missing
+            return pattern.sub(replacer, template)
+
         if isinstance(text,bytes):
             text = text.decode('utf-8')   
 
         mdhtml = markdown.markdown(text, extensions=['fenced_code', 'tables','codehilite'])
+        if not self.markdown_envelope:
+            env = """<!DOCTYPE html>
+                <html>
+                <head>
+                    <title>{title}</title>
+                    <link rel="stylesheet" href="{markdown_css}">
+                    <link rel="stylesheet" href="{highlight_css}">
+                </head>
+                <body>
+                {mdhtml}
+                </body>
+                </html>"""
+        else:
+            try:
+                with open(self.markdown_envelope) as f:
+                    env = f.read()
+            except:
+                pass
 
-        mdhtml = f"""<!DOCTYPE html>
-            <html>
-            <head>
-                <title>{title}</title>
-                <link rel="stylesheet" href="{self.markdown_css}">
-                <link rel="stylesheet" href="{self.highlight_css}">
-            </head>
-            <body>
-            {mdhtml}
-            </body>
-            </html>"""
-        return mdhtml
+        pattern = re.compile(r'{(?:self\.)?(\w+)}')
+        return render_template(pattern, env)
 
     async def request_handler(self, **args):
         code, message, title = 200, '', ''
