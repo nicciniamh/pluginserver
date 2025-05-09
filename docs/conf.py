@@ -17,7 +17,7 @@ html_theme = 'furo'  # Furo theme for ReadTheDocs
 html_static_path = ['_static']
 
 # Set the Pygments style for code highlighting
-pygments_style = 'github-dark'  # GitHub dark theme for Pygments
+#pygments_style = 'github-dark'  # GitHub dark theme for Pygments
 
 html_theme_options = {
     "light_css_variables": {
