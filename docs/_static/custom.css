@@ -1,11 +1,11 @@
 /* Custom styles for the table of contents */
 .wy-side-nav .toctree-l1 {
-    color: #06249a;  /* Update this with your desired color */
+    color: lightblue;  /* Update this with your desired color */
 }
 .wy-side-nav .toctree-l1 a {
-    color: #06249a;  /* Update this with your desired link color */
+    color: lightblue;  /* Update this with your desired link color */
 }
 .wy-side-nav .toctree-l1 a:hover {
-    color: #3445e2;  /* Update this with your desired hover color */
+    color: lightblue;  /* Update this with your desired hover color */
 }
 
