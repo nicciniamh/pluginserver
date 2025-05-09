@@ -1,40 +1,23 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
 # -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
 project = 'Plugin Server'
 copyright = '2025, Nicole Stevens'
 author = 'Nicole Stevens'
 
 # -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-
-extensions = ['myst_parser']
+extensions = [
+    'myst_parser',  # Markdown support
+    'sphinx_github_style',  # GitHub style theme
+]
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-
-
 # -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
-#html_theme = 'sphinx_rtd_theme'
+html_theme = 'furo'  # Furo theme for ReadTheDocs
 html_static_path = ['_static']
 
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
-}
-master_doc = 'index'
-html_theme = "furo"
-
-# Set default Pygments style
-pygments_style = "github-dark"  # Set a default; we'll handle the dynamic switch with JS
+# Set the Pygments style for code highlighting
+pygments_style = 'github-dark'  # GitHub dark theme for Pygments
 
 html_theme_options = {
     "light_css_variables": {
@@ -46,8 +29,13 @@ html_theme_options = {
         "color-brand-content": "#8ae234",
     },
 }
-extensions = [
-    'sphinx_github_style',
-]
 
-pygments_style = 'github-dark'
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',  # Markdown files with myst-parser
+}
+master_doc = 'index'
+
+# -- Additional configurations ----------------------------------------------
+# If you have any other settings like `autodoc` or `intersphinx`, include them here.
+
