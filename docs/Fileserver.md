@@ -89,17 +89,23 @@ To configure this plugin, the [configuration](Config.md) can be modified as belo
 # highlight_css: This is the CSS used to highlight code in markdwon
 # indexfile: This is the name of he file used when a directory path is used.
 # documents: This is used to set the document root for fileservice
+# log_includes: If common_log is set, files included with magic vars are logged
+# markdown_envelope: if set is the file used to wrap rendered markdow.
 #   The format of this is:
 #        documents=html:/path/to/documents
 #                        ^-- Path to documents
 #                   ^-- This is the root request path if not supplied, docs is used
 #  The default is: documents=docs
 #
-common_log=~/test/access_log
+# Any path containing a tilde (~) is resolved to a home directory. 
+#
+common_log=/path/to/logs/access_log
 markdown_css=markdown.css
 highlight_css=highlight.css
 documents=html:/path/to/docs
 indexfile=app.html
+log_includes=bool:false
+markdown_envelope=/path/to/file.html
 ```
 
 A note about CLF. CLF is part of the LogJam logging module, howwever the LogJam.common_log function writes to the CLF format log independently. 
