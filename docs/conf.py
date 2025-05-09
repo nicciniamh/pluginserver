@@ -50,5 +50,5 @@ html_js_files = [
     "toggle_pygments.js",  # Include the JS file
 ]
 html_theme_options = {
-    "code_theme": "github",  # Set default syntax highlighting theme
+    "code_theme": "github-dark",  # Set default syntax highlighting theme
 }
