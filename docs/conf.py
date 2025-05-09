@@ -46,3 +46,8 @@ html_theme_options = {
         "color-brand-content": "#8ae234",
     },
 }
+extensions = [
+    'sphinx_github_style',
+]
+
+pygments_style = 'github-dark'
