@@ -1,4 +1,5 @@
 sphinx
 myst-parser
 furo
-sphynx-github-style
+sphinx-github-style==1.2.2
+
