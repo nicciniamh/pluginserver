@@ -43,3 +43,4 @@ html_theme_options = {
         "color-brand-content": "#8ae234",
     },
 }
+pygments_style='github'
