@@ -20,12 +20,12 @@ html_static_path = ['_static']
 
 html_theme_options = {
     "light_css_variables": {
-        "color-brand-primary": "#4e9a06",
-        "color-brand-content": "#4e9a06",
+        "color-brand-primary": "#06249a";
+        "color-brand-content": "##062d9a",
     },
     "dark_css_variables": {
-        "color-brand-primary": "#8ae234",
-        "color-brand-content": "#8ae234",
+        "color-brand-primary": "#3445e2",
+        "color-brand-content": "#3734e2",
     },
 }
 
