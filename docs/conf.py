@@ -24,7 +24,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 #html_theme = 'sphinx_rtd_theme'
-html_theme = "furo"
 html_static_path = ['_static']
 
 source_suffix = {
@@ -32,6 +31,10 @@ source_suffix = {
     '.md': 'markdown',
 }
 master_doc = 'index'
+html_theme = "furo"
+
+# Set default Pygments style
+pygments_style = "github"  # Set a default; we'll handle the dynamic switch with JS
 
 html_theme_options = {
     "light_css_variables": {
@@ -43,13 +46,9 @@ html_theme_options = {
         "color-brand-content": "#8ae234",
     },
 }
-
-def get_pygments_theme():
-    # Furo theme has built-in toggle, we'll use a simple check for mode
-    if os.environ.get('USER_MODE', 'light') == 'dark':  # Default to 'light' if not set
-        return 'github-dark'
-    else:
-        return 'github-light'
-
-# Set the Pygments style based on the theme mode
-pygments_style = get_pygments_theme()
+html_js_files = [
+    "toggle_pygments.js",  # Include the JS file
+]
+html_theme_options = {
+    "code_theme": "github",  # Set default syntax highlighting theme
+}
