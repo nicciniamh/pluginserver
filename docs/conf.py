@@ -14,7 +14,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = 'furo' # You can try changing this to a theme provided by sphinx-github-style if it has one
-
+html_title = "Plugin Server"
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',    # Markdown files with myst-parser
