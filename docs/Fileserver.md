@@ -58,6 +58,7 @@ For formatting dates the format should be a plus sign (+) followd by one or more
 |  %V  | ISO 8601 week number (as a decimal number [01,53]).                             |
 |  %%  | A literal '%' character                                                         |
 
+Any other characters between @'s including spaces are replaced verbatim.
 
 A magic variable of `@TIME+%A %B $d, %Y@` would yield a string like "Monday May 5, 2025"
 
