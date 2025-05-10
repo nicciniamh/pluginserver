@@ -1,4 +1,4 @@
 sphinx
 myst-parser
 sphinx_github_style==1.2.2
-sphinx-rtd-dark-mode
+furo
