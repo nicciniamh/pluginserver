@@ -22,4 +22,4 @@ source_suffix = {
 master_doc = 'index'
 
 # -- Configuration for sphinx-github-style ------------------------------------
-linkcode_url = "https://github.com/nicciniamh/pluginserver"
+#linkcode_url = "https://github.com/nicciniamh/pluginserver"
