@@ -61,6 +61,14 @@ class PluginManager:
             kwargs.update(adict)
             kwargs['config'] = self.config
             kwargs['log'] = self.log or print
+            if 'json' in adict:
+                jfilename= os.path.join(self.config.paths.plugins, adict['json'])
+                if os.path.exists(jfilename):
+                    try:
+                        with open(jfilename) as  f:
+                            adict.update(json.load(f))
+                    except Exception as e:
+                        self.log.warn(f"Plugin for {cls.__name__} could not load JSON settings from {jfilename}: {e}")
             try:
                 instance = cls(**kwargs)
                 self.log(f"Loaded plugin {cls.__name__}: {instance}")
