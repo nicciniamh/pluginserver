@@ -26,12 +26,12 @@ myplugin=auth_type=plugin&apikey=<your api key here>[&other paramaters]
 ## Authentication Methods for Clients
 There are four ways of passing the pre-shared apikey to the server plugin handlers:
 
-| Method                | Secure | Example |
-|-----------------------|--------|---------|
-| GET data              |   ❌   | `curl https://server.tld:port/plugin?apikey=xxx`
-| POST data             |   ✓    | `curl -X POST https://sever.tld:port/plugin -H "Content-Type: application/json" -d '{"apikey": "xxx"}'`
-| Authentication Header |   ✓    | ` curl -H "Authorization: Bearer xxx" https://server.tld:port/plugin`
-| X-Custom-Auth Header  |   ✓    | `curl -H "X-Custom-Auth: xxx" https://server.tld:port/plugin`
+| Method                | Secure    | Example |
+|-----------------------|-----------|---------|
+| GET data              |  *no*     | `curl https://server.tld:port/plugin?apikey=xxx`
+| POST data             |  *yes*    | `curl -X POST https://sever.tld:port/plugin -H "Content-Type: application/json" -d '{"apikey": "xxx"}'`
+| Authentication Header |  *yes*    | ` curl -H "Authorization: Bearer xxx" https://server.tld:port/plugin`
+| X-Custom-Auth Header  |   *yes*   | `curl -H "X-Custom-Auth: xxx" https://server.tld:port/plugin`
 
 Using GET data is fine for testing but this is not secure. The apikey can be exposed in logs or anywhere the URL being requested is logged. Using either header authentication scheme is more secure however, Authentication header is most preferred. 
 
