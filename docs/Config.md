@@ -43,6 +43,9 @@ Some optional, but helpful sections
 | `[auth]`         | apikey - set the apikey to be used for authorization. See the Auth section for pluginserver
 
 
+### Plugin Parameters
+In order to configure parameters to hand off to plugins, a string for key,value pairs is used for each plugin. For example, this line in plugin_parms sets up the authorization for systeminfo: `systeminfo=auth_type=global`. These variables are split and handed off to the plugin class as part of its kwargs. For more complicated parameters, or, parameters that configparser doesn't like, a parameter string of `json:filename.json` will load, from the plugins path, the JSON data in that file, once again, as part of the plugin class' kwargs. 
+
 ## Serving Static Files
 Under `[paths]` if the optional key, documents is set, static pages may be served from the directory configured. To set this directory the parameter looks like: 
 
