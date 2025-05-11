@@ -7,6 +7,7 @@ import glob
 from typing import Dict, List, Union
 from plugincore import baseplugin
 from urllib.parse import parse_qs
+import json
 
 def parse_parameter_string(s):
     return {key: value[0] for key, value in parse_qs(s).items()}
@@ -66,9 +67,9 @@ class PluginManager:
                 if os.path.exists(jfilename):
                     try:
                         with open(jfilename) as  f:
-                            adict.update(json.load(f))
+                            kwargs.update(json.load(f))
                     except Exception as e:
-                        self.log.warn(f"Plugin for {cls.__name__} could not load JSON settings from {jfilename}: {e}")
+                        self.log.warning(f"Plugin for {cls.__name__} could not load JSON settings from {jfilename}: {e}")
             try:
                 instance = cls(**kwargs)
                 self.log(f"Loaded plugin {cls.__name__}: {instance}")
