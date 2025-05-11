@@ -63,32 +63,32 @@ class PluginManager:
             kwargs['log'] = self.log or print
             try:
                 instance = cls(**kwargs)
-                print(f"Loaded plugin {cls.__name__}: {instance}")
+                self.log(f"Loaded plugin {cls.__name__}: {instance}")
                 self.plugins[instance._get_plugin_id()] = instance
             except Exception as e:
-                print(f"Exception loading plugin from {path}: {e}")
+                self.log.exception(f"Exception loading plugin from {path}: {e}")
                 
     def remove_plugin(self, plugin_id: str):
         plugin = self.plugins.pop(plugin_id, None)
         if not plugin:
-            print(f"No plugin with ID {plugin_id}")
+            self.log(f"No plugin with ID {plugin_id}")
             return
 
         # Try to remove the module
         try:
             plugin.terminate_plugin()
         except Exception as e:
-            print(f"Exception {type(e)} Unloading plugin - terminate_plugin threw {e}")
+            self.log.exception(f"Exception {type(e)} Unloading plugin - terminate_plugin threw {e}")
         module_name = plugin.__class__.__module__
         module_file = os.path.basename(module_name + ".py")
-        print(f"Removing plugin {plugin_id} from module {module_name}")
+        self.log(f"Removing plugin {plugin_id} from module {module_name}")
 
         self.modules.pop(module_file, None)
         sys.modules.pop(module_name, None)
 
     def reload_plugin(self, plugin_id: str):
         if plugin_id not in self.plugins:
-            print(f"No such plugin to reload: {plugin_id}")
+            self.log(f"No such plugin to reload: {plugin_id}")
             return
         plugin = self.plugins[plugin_id]
         module_name = plugin.__class__.__module__

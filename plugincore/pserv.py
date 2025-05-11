@@ -195,8 +195,10 @@ def register_plugin_route(plugin_id, instance, config):
         data = {'log': log, 'request_headers': dict(request.headers), 'request': request}
         if request.method == 'POST' and request.can_read_body:
             try:
-                data.update(await request.json())
-            except Exception:
+                rqj = await request.json()
+                data.update(rqj)
+            except Exception as e:
+                log.exception(f"Cannot get request body {e}")
                 pass
         data.update(request.query)
         # You can also capture `tail` if you want to use the subpath

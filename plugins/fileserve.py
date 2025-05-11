@@ -23,24 +23,24 @@ class ServeFiles(BasePlugin):
 
         if 'markdown_envelope' in self.config.file_server:
             self.markdown_envelope = os.path.expanduser(self.config.file_server.markdown_envelope)
-            self.log(f"Using {self.markdown_envelope} for markdown envelope")
+            self.log(f"{self._plugin_id}: Using {self.markdown_envelope} for markdown envelope")
         else:
             self.markdown_envelope = None
         if 'common_log' in self.config.file_server:
             self.log_file = os.path.expanduser(self.config.file_server.common_log)
-            self.log(f"Serve access log is {self.log_file}")
+            self.log(f"{self._plugin_id}: Serve access log is {self.log_file}")
 
         self.log_includes = self.config.file_server.get('log_includes',False) or False
         if self.log_includes:
-            self.log('Magic includes are logged')        
+            self.log('{self._plugin_id}: Magic includes are logged')        
         for k in ['highlight','markdown']:
             if f"{k}_css" in self.config.file_server:
                 css = self.config.file_server.get(f"{k}_css",f"{k}.css") or f"{k}.css"
                 setattr(self,f"{k}_css",css)
         self.index_file = self.config.file_server.get('indexfile','index.html') or 'index.html'
-        self.log(f"{type(self)}: index_file is {self.index_file}")
-        self.log(f"{type(self)}: markdown_css is {self.markdown_css}")
-        self.log(f"{type(self)}: highlight_css is {self.highlight_css}")
+        self.log(f"{self._plugin_id}: index_file is {self.index_file}")
+        self.log(f"{self._plugin_id}:  markdown_css is {self.markdown_css}")
+        self.log(f"{self._plugin_id}: highlight_css is {self.highlight_css}")
         if 'documents' in self.config.file_server:
             if ':' in self.config.file_server.documents:
                 rpath, dpath = self.config.file_server.documents.split(':',1)
@@ -54,7 +54,6 @@ class ServeFiles(BasePlugin):
 
     def retitle_document(self, text, title):
         soup = BeautifulSoup(text, "html.parser")
-        print(f"Setting document title to {title}")
         # Modify existing title
         if soup.title:
             soup.title.string = title
