@@ -1,6 +1,7 @@
 import asyncio
 from aiohttp import web
 import inspect
+from plugincore import logjam
 
 class BasePlugin:
     """
@@ -11,11 +12,12 @@ class BasePlugin:
     def __init__(self, **kwargs):
         self._auth_type = None
         self._apikey = None
-        self.log = kwargs.get('log',print)
-
         self.config = kwargs.get('config')
         self._plugin_id = kwargs.get('route_path',self.__class__.__name__.lower())
         auth = kwargs.get('auth_type')
+        args = kwargs.get('prog_args')
+        if not args:
+            raise ValueError(f"no args were passed")
         if auth:
             auth = auth.lower()
         if auth:
@@ -30,6 +32,11 @@ class BasePlugin:
                 if not self._apikey:
                     raise ValueError('Auth is plugin but no plugin apikey')
                 self._auth_type = 'plugin'
+        if args.log:
+            self.log = logjam.LogJam(file=args.log, name=self._plugin_id,level=args.level)
+        else:
+            self.log = logjam.LogJam(name=self._plugin_id,level=args.level)
+        kwargs['log'] = self.log
         self.args = dict(kwargs)
 
     def _get_client_ip(self,request):
@@ -89,6 +96,7 @@ class BasePlugin:
         return self._plugin_id
     
     async def handle_request(self, **data):
+        request = data.get('request',{})
         auth_check = self._check_auth(data)
         data['client_ip'] = self._get_client_ip(data.get('request'))
         if auth_check:
@@ -98,6 +106,13 @@ class BasePlugin:
         else:
             self.log.error(f"{data['client_ip']} - request for {self._plugin_id} - Not authorized")
             code, response = 403, {'error': 'unauthorized'}
-        if not isinstance(response,web.Response):
-            response = web.json_response(response,status=code)
+
+        if isinstance(response, web.Response):
+            pass
+        elif isinstance(response, dict):
+            response = web.json_response(response)
+        elif isinstance(response, str):
+            response = web.Response(text=response, content_type='text/html')
+        else:
+            response = web.json_response({'result': str(response)})
         return response

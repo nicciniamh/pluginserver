@@ -18,14 +18,18 @@ class PluginManager:
         self.plugins: Dict[str, baseplugin.BasePlugin] = {}
         self.modules: Dict[str, types.ModuleType] = {}
         self.config = kwargs.get('config')
+        self.task_callback = kwargs.get('task_callback')
         self.log = kwargs.get('log')
+        self.prog_args = kwargs.get('args')
+        if not self.prog_args:
+            raise ValueError('PluginManager: no args object passed')
         self.kwargs = dict(kwargs)
 
     
     def reset_config(self,config):
         self.config = config
 
-    def _load_module(self, filepath: str) -> types.ModuleType:
+    async def _load_module(self, filepath: str) -> types.ModuleType:
         mod_name = os.path.basename(filepath).replace(".py", "")
         spec = importlib.util.spec_from_file_location(mod_name, filepath)
         if spec is None or spec.loader is None:
@@ -41,27 +45,27 @@ class PluginManager:
                 classes.append(cls)
         return classes
 
-    def load_plugins(self):
+    async def load_plugins(self):
         plugin_files = glob.glob(os.path.join(self.plugin_dir, '*.py'))
-        print(f"Loading plugins from {self.plugin_dir}: {plugin_files}")
+        self.log(f"Loading plugins from {self.plugin_dir}")
         for path in plugin_files:
-            self.load_plugin(path)
+            await self.load_plugin(path)
 
-    def load_plugin(self, path: str):
+    async def load_plugin(self, path: str):
         plugin_module = os.path.splitext(os.path.basename(path))[0]  # strip .py
-        mod = self._load_module(path)
+        mod = await self._load_module(path)
         self.modules[plugin_module] = mod
 
         for cls in self._get_plugin_classes(mod):
-            adict = {}
+            adict = {'task_callback': self.task_callback}
             try:
                 adict = parse_parameter_string(self.config.plugin_parms[plugin_module])
             except (AttributeError, KeyError):
                 pass
+            adict['prog_args'] = self.prog_args
             kwargs = self.kwargs.copy()
             kwargs.update(adict)
             kwargs['config'] = self.config
-            kwargs['log'] = self.log or print
             if 'json' in adict:
                 jfilename= os.path.join(self.config.paths.plugins, adict['json'])
                 if os.path.exists(jfilename):
@@ -72,12 +76,15 @@ class PluginManager:
                         self.log.warning(f"Plugin for {cls.__name__} could not load JSON settings from {jfilename}: {e}")
             try:
                 instance = cls(**kwargs)
-                self.log(f"Loaded plugin {cls.__name__}: {instance}")
+                initialize = getattr(instance,'initialize',None)
+                if initialize and callable(initialize):
+                    await instance.initialize(**kwargs)
+                self.log(f"Loaded plugin {cls.__name__}")
                 self.plugins[instance._get_plugin_id()] = instance
             except Exception as e:
                 self.log.exception(f"Exception loading plugin from {path}: {e}")
                 
-    def remove_plugin(self, plugin_id: str):
+    async def remove_plugin(self, plugin_id: str):
         plugin = self.plugins.pop(plugin_id, None)
         if not plugin:
             self.log(f"No plugin with ID {plugin_id}")
@@ -95,7 +102,7 @@ class PluginManager:
         self.modules.pop(module_file, None)
         sys.modules.pop(module_name, None)
 
-    def reload_plugin(self, plugin_id: str):
+    async def reload_plugin(self, plugin_id: str):
         if plugin_id not in self.plugins:
             self.log(f"No such plugin to reload: {plugin_id}")
             return
@@ -104,12 +111,12 @@ class PluginManager:
         module_file = os.path.basename(module_name + ".py")
         full_path = os.path.join(self.plugin_dir, module_file)
 
-        self.remove_plugin(plugin_id)
-        self.load_plugin(full_path)
+        await self.remove_plugin(plugin_id)
+        await self.load_plugin(full_path)
 
-    def get_plugin(self, plugin_id: str):
+    async def get_plugin(self, plugin_id: str):
         return self.plugins.get(plugin_id)
 
-    def all_plugins(self):
+    async def all_plugins(self):
         return self.plugins
 
