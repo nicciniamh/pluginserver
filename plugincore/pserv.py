@@ -174,7 +174,7 @@ async def pserve_main(args):
 
     signal.signal(signal.SIGHUP, reload)
     log(f"{we_are}({os.getpid()}): Installed SIGHUP handler for reload.")
-    for sig_val_item in []: #[signal.SIGINT, signal.SIGTERM, signal.SIGABRT]:
+    for sig_val_item in []:
         try:
             signal.signal(sig_val_item, lambda signum_val, frame_val: terminate(signum_val, frame_val, sig_to_exit_code=signum_val))
             log(f"Installed signal handler for {get_signal_name(sig_val_item)} to terminate wrapper")
