@@ -245,14 +245,12 @@ async def pserve_main(args):
         log.error(e)
         sys.exit(1)
     except (KeyboardInterrupt, asyncio.CancelledError) as e:
-        log(f"Main server loop interrupted ({type(e).__name__}). Initiating shutdown.")
+        log(f"Exception({type(e).__name__}). Initiating shutdown.")
         pass
     except Exception as e:
         log.exception(f"{type(e)}: Unexpected error in pserve_main server loop: {e}")
     finally:
-        log("pserve_main finally block: Cleaning up runner.")
         await runner.cleanup()
-        log("pserve_main finally block: Runner cleanup finished.")
 
 def check_auth(data, config):
     toktype = 'Undefined'
