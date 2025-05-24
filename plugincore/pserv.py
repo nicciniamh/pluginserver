@@ -172,8 +172,8 @@ async def pserve_main(args):
     else:
         log = logjam.LogJam(name=we_are)
 
-    signal.signal(signal.SIGHUP, reload)
-    log(f"{we_are}({os.getpid()}): Installed SIGHUP handler for reload.")
+    signal.signal(signal.SIGUSR1, reload)
+    log(f"{we_are}({os.getpid()}): Installed SIGUSR1 handler for reload.")
     for sig_val_item in []:
         try:
             signal.signal(sig_val_item, lambda signum_val, frame_val: terminate(signum_val, frame_val, sig_to_exit_code=signum_val))
@@ -245,7 +245,7 @@ async def pserve_main(args):
         log.error(e)
         sys.exit(1)
     except (KeyboardInterrupt, asyncio.CancelledError) as e:
-        log(f"Main server loop interrupted ({type(e).__name__}). Initiating shutdown via finally block.")
+        log(f"Main server loop interrupted ({type(e).__name__}). Initiating shutdown.")
         pass
     except Exception as e:
         log.exception(f"{type(e)}: Unexpected error in pserve_main server loop: {e}")
