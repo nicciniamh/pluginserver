@@ -50,6 +50,5 @@ CORS is implemented in the plugin server with a few [configuration](Config.md) k
 |---------------|------------
 | enabled       | `bool:true`
 | origin_url	   | `list:https://host1.domain1.tld https://host2.domain2.tld`
-| acl			   | `list:[host.]domain.tld`, etc.
 
 The minimal requirement is for enabled to be true and origin url to be populated.
