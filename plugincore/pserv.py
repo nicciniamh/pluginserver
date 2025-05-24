@@ -387,7 +387,6 @@ def register_control_routes(config):
                 return web.json_response({'error': f'Failed to reload plugin {pid}'}, status=500)
         web.json_response({'error': f'Plugin "{pid}" not found'}, status=404)
 
-
     @routes.route('GET', '/reload/all')
     @routes.route('POST', '/reload/all')
     async def reload_all(request):
