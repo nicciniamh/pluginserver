@@ -208,7 +208,7 @@ async def pserve_main(args):
             log(f"FileNotFoundError loading SSL cert/key: {e}. Check paths: Cert='{ssl_cert}', Key='{ssl_key}'")
             ssl_ctx = None
         except ssl.SSLError as e:
-            log(f"ssl.SSLError loading SSL cert/key: {e}. Ensure key and cert match and are not corrupted.")
+            log(f"ssl.SSLError loading SSL cert/key: {e}. Plese check your key and certfiles.")
             ssl_ctx = None
         except Exception as e:
             log(f"Exception({type(e).__name__}): Error loading ssl_cert_chain: {e}")
@@ -216,7 +216,6 @@ async def pserve_main(args):
         log("End of SSL configuration.")
     elif enabled:
         log("SSL is enabled in config, but certfile or keyfile is missing/not specified.")
-
 
     if not 'paths' in globalCfg or  not 'plugins' in globalCfg.paths:
         log(f"Configuration error: 'paths.plugins' not found in '{config_file}'. Cannot load plugins.")
@@ -249,11 +248,10 @@ async def pserve_main(args):
         log(f"Main server loop interrupted ({type(e).__name__}). Initiating shutdown via finally block.")
         pass
     except Exception as e:
-        log.exception(f"Unexpected error in pserve_main server loop: {e}")
+        log.exception(f"{type(e)}: Unexpected error in pserve_main server loop: {e}")
     finally:
         log("pserve_main finally block: Cleaning up runner.")
-        if 'runner' in locals() and runner is not None:
-            await runner.cleanup()
+        await runner.cleanup()
         log("pserve_main finally block: Runner cleanup finished.")
 
 def check_auth(data, config):
