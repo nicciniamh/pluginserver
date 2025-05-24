@@ -41,14 +41,14 @@ CORS is a crucial security mechanism that helps protect users from cross-site sc
 
 
 ## CORS within Plugin Server
-The plugin server CORS module works in two different ways. It uses the standard CORS headers and OPTIONS requests, but, also, if there is no CORS headers, it also performs an ACL check against the requesting host. This ACL check is optional but adds another layer of security. 
+The plugin server uses a middleware to control CORS headers. If enabled the OPTIONS request for the preflight check by browsers is handled and if the connecting host is in the origin_url list the request can be satisfied.
 
 ### Configuration of CORS 
 CORS is implemented in the plugin server with a few [configuration](Config.md) key,value pairs under [CORS}
 
 | Key           | Value/Usage
 |---------------|------------
-| enabled       | `bool:true`
+| enabled       | `bool:true` Enable cors
 | origin_url	   | `list:https://host1.domain1.tld https://host2.domain2.tld`
 
 The minimal requirement is for enabled to be true and origin url to be populated.
