@@ -13,7 +13,7 @@ CORS.md
 SSL.md
 Sessman.md
 ```
-#Plugin Server is a Python script and library to manage a REST-like API server utilizing a plugin system to handle requests to API routes. It is built upon Python async and aiohttp. These API routes get served as an endpoint, with `proto://server.domain.tld:port/route`.
+# Plugin Server is a Python script and library to manage a REST-like API server utilizing a plugin system to handle requests to API routes. It is built upon Python async and aiohttp. These API routes get served as an endpoint, with `proto://server.domain.tld:port/route`.
 
 # *Warning: This is alpha level code, some of the examples may not work. Please stand by!*
 
