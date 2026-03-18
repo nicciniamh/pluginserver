@@ -168,7 +168,7 @@ async def pserve_main(args):
 
     config_file = args.ini_file
     if args.log:
-        log = logjam.LogJam(file=args.log, name=we_are,level=args.level)
+        log = logjam.LogJam(file=args.log, name=we_are,level=args.level.upper())
     else:
         log = logjam.LogJam(name=we_are)
 
