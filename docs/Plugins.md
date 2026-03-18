@@ -27,6 +27,11 @@ The request_handler method should return a tuple with a code and a str, list or 
 
 Once the request is completed it is handed back to the server's top level route handler which checks to see if [CORS](CORS.md) is enabled, and, if so checks the ACL and updates the response headers to send the proper [CORS](CORS.md) headers. This completes the endpoint service.
 
+The BasePlugin class may have an optional method called *initilaize* which has the signature of 
+`async def initialize(self,**kwargs)` kwargs is the same kwargs that __init__ gets. This allows for any initilaization of the plugin that needs to manage async functions, objects and methods.
+
+The request handler may be *async* too, by delaring it async def request_handler. 
+
 ### Plugin Termination
 In the case of simple plugins, termination is simply unloading the plugin. The BasePlugin class has a terminate_plugin that, by default, does nothing. 
 
