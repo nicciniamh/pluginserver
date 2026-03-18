@@ -1,6 +1,8 @@
 import logging
 import time
 import io
+import sys
+import os
 
 class LogJam:
     def __init__(self, **kwargs):
@@ -17,7 +19,10 @@ class LogJam:
 
         # Prevent duplicate handlers if logger already exists
         if not self.logger.handlers:
-            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            if os.isatty(sys.stdout.fileno()):
+                formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            else:
+                formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
 
             # Console (stdout) handler
             ch = logging.StreamHandler()
