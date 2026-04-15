@@ -448,11 +448,9 @@ def main():
     exit_code = 0
     _signal_exit_code = 0
 
-    #try:
-    if True:
+    try:
         asyncio.run(pserve_main(args))
         exit_code = _signal_exit_code
-"""
     except KeyboardInterrupt:
         log.info("Application terminated by KeyboardInterrupt (caught in main).")
         exit_code = getattr(signal.SIGINT, 'value', 2)
@@ -466,6 +464,6 @@ def main():
         log.info(f"Application exiting with code {exit_code}.")
 
     sys.exit(exit_code)
-"""  
+  
 if __name__ == "__main__":
     main()
