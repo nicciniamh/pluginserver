@@ -55,6 +55,8 @@ class LogJam:
         self.sysd_format = "<{priority}> - {level} - {name} - {msg}"
         self.std_format = "{timestamp} - {name} - {level} - {msg}"
 
+        self.info(f"{self.name}: LogJam Config {lc_config}")
+
     def _output(self, level, *args):
         if self.levels[level] >= self.threshold:
             msgargs = {

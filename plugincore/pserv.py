@@ -185,6 +185,8 @@ async def pserve_main(args):
     if 'pidfile' in globalCfg.paths:
         with open(globalCfg.paths.pidfile,'w') as f:
             print(f"{os.getpid()}",file=f)
+
+    globalCfg['logging']['level'] = args.level
     ssl_ctx = None
     ssl_cert, ssl_key = (None, None)
     enabled = False
@@ -344,7 +346,7 @@ def register_control_routes(config):
 
     log("Registering Control Routes")
     @routes.route('GET','/plugins')
-    @routes.route('POS','/plugins')
+    @routes.route('POST','/plugins')
     async def plugin_list(request):
         data = {}
         if request.method == 'POST' and request.can_read_body:
