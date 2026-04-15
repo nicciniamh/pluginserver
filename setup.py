@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='pluginserver',
-    version='0.9.4',
+    version='0.9.5',
     packages=['plugincore'],
     include_package_data=True,
     description='Plugin-driven API server',

@@ -166,7 +166,7 @@ class Config(UserDict):
         return True
 
     def __setitem__(self, key, item):
-        item = self._replace_env_vars(item)
+        #item = self._replace_env_vars(item)
         print('setattr',self,key,item)
         setattr(self,key,item)
         return super().__setitem__(key, item)
