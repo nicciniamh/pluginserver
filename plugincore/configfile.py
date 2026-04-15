@@ -5,6 +5,8 @@ import builtins
 import re
 from collections import UserDict
 
+masterConfig = {} ## Provide a master config object
+
 def value_bool(value: any) -> bool:
     if type(value) is str:
         return value in ['true','enabled','on','1','enable']
@@ -15,7 +17,7 @@ def value_bool(value: any) -> bool:
 class Interpolator(configparser.ExtendedInterpolation):
     """
     This Interpolator class allows for variable interpolation in a few ways. Normally 
-    the values from the ini file are, programaticcallt, config[section][variable] or
+    the values from the ini file are, programmatically, config[section][variable] or
     config.section.variable and these are strings but sometimes we need better conversions
     so this class converts:
         int:42 to an int with the value of 42
@@ -105,6 +107,7 @@ class Config(UserDict):
         See the Interpolator class above for information about how value strings are parsed.
         """
     def __init__(self, **kwargs):
+        global masterConfig
         self._foo = "foo"
         super().__init__({})
         section_name = kwargs.get('section_name')
@@ -149,6 +152,8 @@ class Config(UserDict):
                     self.data[k] = v
         else:
             raise AttributeError('items or file must be specified')
+        
+        masterConfig = self
 
     @property
     def _keys(self):
