@@ -186,7 +186,7 @@ async def pserve_main(args):
         with open(globalCfg.paths.pidfile,'w') as f:
             print(f"{os.getpid()}",file=f)
 
-    globalCfg['logging']['level'] = args.level
+    globalCfg['logging']={'level': args.level}
     ssl_ctx = None
     ssl_cert, ssl_key = (None, None)
     enabled = False
