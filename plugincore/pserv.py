@@ -11,7 +11,7 @@ from aiohttp import web
 from plugincore import pluginmanager
 from plugincore import configfile
 from plugincore import logjam
-
+import traceback
 routes = web.RouteTableDef()
 manager = None
 globalCfg = None
@@ -455,7 +455,7 @@ def main():
         log.info("Application terminated by KeyboardInterrupt (caught in main).")
         exit_code = getattr(signal.SIGINT, 'value', 2)
     except SystemExit as e:
-        log.info(f"SystemExit caught in main with code: {e.code}")
+        log.info(f"SystemExit caught in main with code: {e.code}: {traceback.format_exc()}")
         exit_code = e.code if e.code is not None else 0
     except Exception as e:
         log.exception(f"Unhandled exception in main: {e}")
