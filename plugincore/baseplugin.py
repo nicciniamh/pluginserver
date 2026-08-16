@@ -100,12 +100,19 @@ class BasePlugin:
         auth_check = self._check_auth(data)
         data['client_ip'] = self._get_client_ip(data.get('request'))
         if auth_check:
-            result = self.request_handler(**data)
-            code, response = await result if inspect.isawaitable(result) else result
-            #print(f"Got {code} - {response}")
+            try:
+                result = await self.request_handler(**data)
+                code, response = result
+                self.log.debug(f"Got {code} - {response}")
+            except Exception as e:
+                message = f"{type(e).__name__} exception handling request: {e}"
+                self.log.error(message)
+                code = 500
+                response = {'status': 'exception', 'type': type(e).__name__, 'message': message}
         else:
             self.log.error(f"{data['client_ip']} - request for {self._plugin_id} - Not authorized")
             code, response = 403, {'error': 'unauthorized'}
+            self.log.debug(f"Got {code} - {response}")
 
         if isinstance(response, web.Response):
             pass

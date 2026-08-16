@@ -323,8 +323,7 @@ def register_plugin_route(plugin_id, instance, config):
         except KeyError:
             data['subpath'] = None
 
-        response_data = await maybe_async(inst.handle_request(**data))
-
+        response_data = await inst.handle_request(**data)
         if not isinstance(response_data, web.StreamResponse):
             if isinstance(response_data, (dict, list)):
                 response = web.json_response(response_data)
